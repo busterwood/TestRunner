@@ -73,15 +73,18 @@ namespace TestGui
                 return;
             }
 
+            const int TickImageIdx = 0;
+            const int CrossImageIdx = 1;
+
             var li = new ListViewItem(e.TestName);
             if (e.Pass)
             {
-                li.ImageIndex = 0;
+                li.ImageIndex = TickImageIdx;
                 li.Group = passedGrp;
             }
             else
             {
-                li.ImageIndex = 1;
+                li.ImageIndex = CrossImageIdx;
                 li.Group = failedGrp;
             }
             li.Tag = e.Output;
@@ -91,13 +94,14 @@ namespace TestGui
         private void testsList_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (testsList.SelectedItems.Count == 0)
-                outputText.Text = "";
-            else
             {
-                var item = testsList.SelectedItems[0];
-                var lines = (List<string>)item.Tag;
-                outputText.Text = string.Join(Environment.NewLine, lines);
+                outputText.Text = "";
+                return;
             }
+
+            var item = testsList.SelectedItems[0];
+            var lines = (List<string>)item.Tag;
+            outputText.Text = string.Join(Environment.NewLine, lines);
         }
     }
 }
