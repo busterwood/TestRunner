@@ -23,22 +23,21 @@ namespace TestGui
         private void Tests_Load(object sender, EventArgs e)
         {
             this.Text = Runner.AsmName;
+            DoubleBufferTestsList();
+            passedGrp = testsList.Groups[1];
+            failedGrp = testsList.Groups[0];
+
             Runner.RunStarted += RunStarted;
             Runner.RunFinished += RunFinished;
             Runner.Tested += Tested;
             Runner.Start();
-
-            DoubleBufferTestsList();
-
-            passedGrp = testsList.Groups[1];
-            failedGrp = testsList.Groups[0];
         }
 
         private void DoubleBufferTestsList()
         {
             testsList
                .GetType()
-               .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+               .GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)
                .SetValue(testsList, true, null);
         }
 
