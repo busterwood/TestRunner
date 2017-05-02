@@ -22,7 +22,7 @@ namespace Test
         public FixtureRunner(Type fixture)
         {
             this.fixture = fixture;
-            methods = fixture.GetMethods();
+            methods = fixture.GetMethods().Where(m => !m.IsIgnored()).ToArray();
             setup = methods.FirstOrDefault(m => m.IsSetup());
             tearDown = methods.FirstOrDefault(m => m.IsTearDown());
             fixtureTimeoutMs = fixture.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
@@ -127,13 +127,15 @@ namespace Test
 
         private void Fail(string testName, Exception ex)
         {
-            StdOut.Fail($"{fixture.Name}.{testName}: {ex}");
+            Console.WriteLine(ex);
+            StdOut.Fail($"{fixture.Name}.{testName}");
             failed++;
         }
 
         private void Fail(string testName, string message)
         {
-            StdOut.Fail($"{fixture.Name}.{testName}: {message}");
+            Console.WriteLine(message);
+            StdOut.Fail($"{fixture.Name}.{testName}");
             failed++;
         }
 

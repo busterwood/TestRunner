@@ -23,7 +23,8 @@ namespace TestGui
         private void Tests_Load(object sender, EventArgs e)
         {
             this.Text = Runner.AsmName;
-            DoubleBufferTestsList();
+            SetDoubleBuffer(testsList);
+            SetDoubleBuffer(outputText);
             passedGrp = testsList.Groups[1];
             failedGrp = testsList.Groups[0];
 
@@ -33,12 +34,12 @@ namespace TestGui
             Runner.Start();
         }
 
-        private void DoubleBufferTestsList()
+        private void SetDoubleBuffer(Control ctrl)
         {
-            testsList
+            ctrl
                .GetType()
                .GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)
-               .SetValue(testsList, true, null);
+               .SetValue(ctrl, true, null);
         }
 
         private void RunStarted(object sender, EventArgs e)
@@ -49,6 +50,9 @@ namespace TestGui
                 return;
             }
             testsList.Cursor = Cursors.AppStarting;
+            categoriesList.Items[0].Text = $"Passed";
+            categoriesList.Items[1].Text = $"Failed";
+
             testsList.Items.Clear();
         }
 
@@ -59,8 +63,8 @@ namespace TestGui
                 BeginInvoke((EventHandler<RunFinishedEventArgs>)RunFinished, sender, e);
                 return;
             }
-            passedGrp.Header = $"Passed ({e.Passed})";
-            failedGrp.Header = $"Failed ({e.Passed})";
+            categoriesList.Items[0].Text = $"Passed ({e.Passed})";
+            categoriesList.Items[1].Text = $"Failed ({e.Failed})";
             testsList.Cursor = Cursors.Default;
         }
 

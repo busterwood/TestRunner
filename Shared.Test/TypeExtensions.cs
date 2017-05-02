@@ -11,6 +11,11 @@ namespace Test
             return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestFixtureAttribute", StringComparison.Ordinal));
         }
 
+        public static bool IsIgnored(this Type type)
+        {
+            return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "IgnoreAttribute", StringComparison.Ordinal));
+        }
+
         public static bool IsSetup(this MethodInfo method)
         {
             return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "SetUpAttribute", StringComparison.Ordinal));
@@ -34,6 +39,11 @@ namespace Test
         public static bool IsTimeout(this CustomAttributeData attr)
         {
             return string.Equals(attr.AttributeType.Name, "TimeoutAttribute", StringComparison.Ordinal);
+        }
+
+        public static bool IsIgnored(this MethodInfo method)
+        {
+            return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "IgnoreAttribute", StringComparison.Ordinal));
         }
 
         public static bool IsTestCase(this CustomAttributeData attr)

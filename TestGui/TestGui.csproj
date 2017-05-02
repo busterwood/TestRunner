@@ -79,6 +79,10 @@
       <Project>{59a11410-55c6-4691-a4d7-2897cb81b44b}</Project>
       <Name>Testd</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestX64\TestX64.csproj">
+      <Project>{a907bf28-1c64-4045-981b-ff443dcd5e5e}</Project>
+      <Name>TestX64</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Test\Test.csproj">
       <Project>{fd4bfd7c-4ae6-4eed-844d-0808e69c4ede}</Project>
       <Name>Test</Name>

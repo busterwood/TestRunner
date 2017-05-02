@@ -22,12 +22,14 @@ namespace TestGui
         public EventHandler<string> Error;
 
         string previousInfo;
+        readonly string[] args;
 
-        public TestdRunner(string asmName)
+        public TestdRunner(string[] args)
         {
-            if (asmName == null)
-                throw new ArgumentNullException(nameof(asmName));
-            this.AsmName = asmName;
+            this.args = args;
+            if (args == null)
+                throw new ArgumentNullException(nameof(args));
+            this.AsmName = args.First(a => !a.StartsWith("--", StringComparison.Ordinal));
         }
 
         public void Start()
@@ -37,7 +39,7 @@ namespace TestGui
             var si = new ProcessStartInfo
             {
                 FileName = Path.Combine(location, "Testd.exe"),
-                Arguments = AsmName,
+                Arguments = string.Join(" ", args),
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 RedirectStandardInput = true,
@@ -48,8 +50,8 @@ namespace TestGui
             Process p = Process.Start(si);
             p.Exited += Testd_Exited;
             p.EnableRaisingEvents = true;
-            var t1 = ParseAutoputAsync(p.StandardError);
-            var t2 = ParseAutoputAsync(p.StandardOutput);
+            Task.Run(() => ParseAutoputAsync(p.StandardError));
+            Task.Run(() => ParseAutoputAsync(p.StandardOutput));
         }
 
         private void Testd_Exited(object sender, EventArgs e)
@@ -58,16 +60,17 @@ namespace TestGui
             var code = p.ExitCode;
         }
 
-        async Task ParseAutoputAsync(TextReader input)
+        void ParseAutoputAsync(TextReader input)
         {
             for (;;)
             {
-                var line = await input.ReadLineAsync();
+                var line = input.ReadLine();
                 if (line == null)
                     return;
                 lock (AsmName)
                 {
-                    switch (Classify(line))
+                    var @class = Classify(line);
+                    switch (@class)
                     {
                         case Class.Output:
                             lines.Add(line);
@@ -75,6 +78,7 @@ namespace TestGui
                         case Class.Pass:
                         case Class.Fail:
                             var args = Parse(line);
+                            args.Output = lines;
                             Tested?.Invoke(this, args);
                             lines = new List<string>();
                             break;
@@ -142,7 +146,6 @@ namespace TestGui
             var bits = line.Split(new string[] { ": " }, StringSplitOptions.None);
             result.TestName = bits[1];
             result.Pass = (bits[0].Equals("PASS", StringComparison.Ordinal));
-            result.Output = lines;
             return result;
         }
 

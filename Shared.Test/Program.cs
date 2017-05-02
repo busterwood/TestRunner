@@ -103,7 +103,7 @@ namespace Test
             {
                 return testAsm
                     .GetExportedTypes()
-                    .Where(t => t.IsTestFixture())
+                    .Where(t => t.IsTestFixture() && !t.IsIgnored())
                     .ToList();
             }
             catch (Exception ex)

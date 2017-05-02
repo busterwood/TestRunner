@@ -10,10 +10,19 @@ namespace Test.Daemon
     class Program
     {
         static string asmName;
+        static bool x64;
 
-        static int Main(string[] args)
+        static int Main(string[] argv)
         {
-            if (args.Length == 0)
+            var args = argv.ToList();
+
+            if (string.Equals(args[0], "--x64", StringComparison.OrdinalIgnoreCase))
+            {
+                x64 = true;
+                args.RemoveAt(0);
+            }
+
+            if (args.Count == 0)
             {
                 StdErr.Error("First argument must be the assembly to test");
                 return 1;
@@ -34,7 +43,7 @@ namespace Test.Daemon
             var location = Path.GetDirectoryName(asm.Location);
             var si = new ProcessStartInfo
             {
-                FileName = Path.Combine(location, "Test.exe"),
+                FileName = Path.Combine(location, $"Test{(x64 ? "X64" : "")}.exe"),
                 Arguments = asmName,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
@@ -44,19 +53,19 @@ namespace Test.Daemon
             };
             Process p = Process.Start(si);
             var tasks = new Task[] {
-                EchoAsync(p.StandardError, Console.Error),
-                EchoAsync(p.StandardOutput, Console.Out),
+                Task.Run(() => EchoAsync(p.StandardError, Console.Error)),
+                Task.Run(() => EchoAsync(p.StandardOutput, Console.Out)),
             };
             Task.WaitAll(tasks);
             p.WaitForExit(); //TODO: timeout and terminate
             StdErr.Info($"Finished test run of '{asmName}'");
         }
 
-        static async Task EchoAsync(TextReader input, TextWriter output)
+        static void EchoAsync(TextReader input, TextWriter output)
         {
             for(;;)
             {
-                var line = await input.ReadLineAsync();
+                var line = input.ReadLine();
                 if (line == null)
                     return;
                 lock (asmName)
