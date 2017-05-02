@@ -12,6 +12,7 @@ namespace TestGui
     {
         ListViewGroup passedGrp;
         ListViewGroup failedGrp;
+        ListViewGroup ignoredGrp;
 
         public Tests()
         {
@@ -27,6 +28,7 @@ namespace TestGui
             SetDoubleBuffer(outputText);
             passedGrp = testsList.Groups[1];
             failedGrp = testsList.Groups[0];
+            ignoredGrp = testsList.Groups[2];
 
             Runner.RunStarted += RunStarted;
             Runner.RunFinished += RunFinished;
@@ -52,6 +54,7 @@ namespace TestGui
             testsList.Cursor = Cursors.AppStarting;
             categoriesList.Items[0].Text = $"Passed";
             categoriesList.Items[1].Text = $"Failed";
+            categoriesList.Items[2].Text = $"Ignored";
 
             testsList.Items.Clear();
         }
@@ -65,6 +68,7 @@ namespace TestGui
             }
             categoriesList.Items[0].Text = $"Passed ({e.Passed})";
             categoriesList.Items[1].Text = $"Failed ({e.Failed})";
+            categoriesList.Items[2].Text = $"Ignored ({e.Ignored})";
             testsList.Cursor = Cursors.Default;
         }
 
@@ -78,17 +82,26 @@ namespace TestGui
 
             const int TickImageIdx = 0;
             const int CrossImageIdx = 1;
+            const int IgnoredImageIdx = 3;
+
 
             var li = new ListViewItem(e.TestName);
-            if (e.Pass)
+            switch (e.Result)
             {
-                li.ImageIndex = TickImageIdx;
-                li.Group = passedGrp;
-            }
-            else
-            {
-                li.ImageIndex = CrossImageIdx;
-                li.Group = failedGrp;
+                case TestResult.Pass:
+                    li.ImageIndex = TickImageIdx;
+                    li.Group = passedGrp;
+                    break;
+                case TestResult.Fail:
+                    li.ImageIndex = CrossImageIdx;
+                    li.Group = failedGrp;
+                    break;
+                case TestResult.Ignored:
+                    li.ImageIndex = IgnoredImageIdx;
+                    li.Group = ignoredGrp;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             li.Tag = e.Output;
             testsList.Items.Add(li);
@@ -106,5 +119,7 @@ namespace TestGui
             var lines = (List<string>)item.Tag;
             outputText.Text = string.Join(Environment.NewLine, lines);
         }
+
+
     }
 }

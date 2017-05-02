@@ -16,6 +16,11 @@ namespace Test
             return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "IgnoreAttribute", StringComparison.Ordinal));
         }
 
+        public static bool IsTestFixtureSetUp(this MethodInfo method)
+        {
+            return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestFixtureSetUpAttribute", StringComparison.Ordinal));
+        }
+
         public static bool IsSetup(this MethodInfo method)
         {
             return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "SetUpAttribute", StringComparison.Ordinal));
@@ -24,6 +29,11 @@ namespace Test
         public static bool IsTearDown(this MethodInfo method)
         {
             return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TearDownAttribute", StringComparison.Ordinal));
+        }
+
+        public static bool IsTestFixtureTearDown(this MethodInfo method)
+        {
+            return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestFixtureTearDownAttribute", StringComparison.Ordinal));
         }
 
         public static bool IsTest(this MethodInfo method)

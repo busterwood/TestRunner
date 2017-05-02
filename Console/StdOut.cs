@@ -28,5 +28,13 @@ namespace Test
             Console.Error.WriteLine($"FAIL: {line}");
             Console.ForegroundColor = before;
         }
+
+        public static void Ignore(string line)
+        {
+            var before = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Error.WriteLine($"IGNORED: {line}");
+            Console.ForegroundColor = before;
+        }
     }
 }

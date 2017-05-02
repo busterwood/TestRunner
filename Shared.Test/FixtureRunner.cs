@@ -10,19 +10,24 @@ namespace Test
         readonly Type fixture;
         object obj;
         readonly MethodInfo[] methods;
+        readonly MethodInfo fixtureSetup;
+        readonly MethodInfo fixtureTearDown;
         readonly MethodInfo setup;
         readonly MethodInfo tearDown;
         object fixtureTimeoutMs;
         int testCount;
         int passed;
         int failed;
+        int ignored;
 
-        public Stats Statistics => new Stats(testCount, passed, failed);
+        public Stats Statistics => new Stats(testCount, passed, failed, ignored);
 
         public FixtureRunner(Type fixture)
         {
             this.fixture = fixture;
-            methods = fixture.GetMethods().Where(m => !m.IsIgnored()).ToArray();
+            methods = fixture.GetMethods();
+            fixtureSetup = methods.FirstOrDefault(m => m.IsTestFixtureSetUp());
+            fixtureTearDown = methods.FirstOrDefault(m => m.IsTestFixtureTearDown());
             setup = methods.FirstOrDefault(m => m.IsSetup());
             tearDown = methods.FirstOrDefault(m => m.IsTearDown());
             fixtureTimeoutMs = fixture.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
@@ -30,9 +35,16 @@ namespace Test
 
         public void RunTests()
         {
+            FixtureSetUp();
             foreach (var test in methods)
             {
-                if (test.IsTest())
+                if (test.IsIgnored())
+                {
+                    StdOut.Ignore($"{fixture.Name}.{test.Name}");
+                    ignored++;
+                    testCount++;
+                }
+                else if (test.IsTest())
                 {
                     obj = Activator.CreateInstance(fixture);
                     testCount++;
@@ -47,6 +59,47 @@ namespace Test
                     var testName = TestCaseName(test, args);
                     RunTestLifeCycle(test, args, testName);
                 }
+            }
+            FixtureTearDown();
+        }
+
+        private bool FixtureSetUp()
+        {
+            try
+            {
+                if (fixtureSetup != null)
+                    fixtureSetup.Invoke(obj, null);
+                return true;
+            }
+            catch (TargetInvocationException ex)
+            {
+                StdErr.Error($"{fixture.Name}: Failed to setup fixture: {ex.InnerException}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                StdErr.Error($"{fixture.Name}: Failed to setup fixture: {ex}");
+                return false;
+            }
+        }
+
+        private bool FixtureTearDown()
+        {
+            try
+            {
+                if (fixtureTearDown != null)
+                    fixtureTearDown.Invoke(obj, null);
+                return true;
+            }
+            catch (TargetInvocationException ex)
+            {
+                StdErr.Error($"{fixture.Name}: Failed to tear down fixture: {ex.InnerException}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                StdErr.Error($"{fixture.Name}: Failed to tear down fixture: {ex}");
+                return false;
             }
         }
 

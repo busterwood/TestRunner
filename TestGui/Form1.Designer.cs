@@ -31,11 +31,12 @@
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Failed", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Passed", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Ignored", System.Windows.Forms.HorizontalAlignment.Left);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Tests));
-            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Filters", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Filters", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Passed", 0);
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Failed", 1);
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Ignored");
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Ignored", 3);
             System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Slow", 2);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.testsList = new System.Windows.Forms.ListView();
@@ -81,9 +82,12 @@
             listViewGroup1.Name = "failedGroup";
             listViewGroup2.Header = "Passed";
             listViewGroup2.Name = "passedGroup";
+            listViewGroup3.Header = "Ignored";
+            listViewGroup3.Name = "ignoredGroup";
             this.testsList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
-            listViewGroup2});
+            listViewGroup2,
+            listViewGroup3});
             this.testsList.HideSelection = false;
             this.testsList.Location = new System.Drawing.Point(141, 0);
             this.testsList.Margin = new System.Windows.Forms.Padding(4);
@@ -114,6 +118,7 @@
             this.testIcons16.Images.SetKeyName(0, "tick-16.ico");
             this.testIcons16.Images.SetKeyName(1, "cross-16.ico");
             this.testIcons16.Images.SetKeyName(2, "slow-16.ico");
+            this.testIcons16.Images.SetKeyName(3, "ignored.png");
             // 
             // categoriesList
             // 
@@ -121,16 +126,16 @@
             this.categoriesList.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.categoriesList.Dock = System.Windows.Forms.DockStyle.Left;
             this.categoriesList.FullRowSelect = true;
-            listViewGroup3.Header = "Filters";
-            listViewGroup3.Name = "listViewGroup1";
-            listViewGroup3.Tag = "Filters";
+            listViewGroup4.Header = "Filters";
+            listViewGroup4.Name = "listViewGroup1";
+            listViewGroup4.Tag = "Filters";
             this.categoriesList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup3});
+            listViewGroup4});
             this.categoriesList.HideSelection = false;
-            listViewItem1.Group = listViewGroup3;
-            listViewItem2.Group = listViewGroup3;
-            listViewItem3.Group = listViewGroup3;
-            listViewItem4.Group = listViewGroup3;
+            listViewItem1.Group = listViewGroup4;
+            listViewItem2.Group = listViewGroup4;
+            listViewItem3.Group = listViewGroup4;
+            listViewItem4.Group = listViewGroup4;
             this.categoriesList.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2,

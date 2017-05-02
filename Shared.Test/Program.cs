@@ -42,7 +42,7 @@ namespace Test
                 totals += RunFixture(fixture);
             }
             sw.Stop();
-            StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, in {sw.Elapsed.TotalSeconds:N1} seconds");
+            StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, {totals.Ignored} ignored, in {sw.Elapsed.TotalSeconds:N1} seconds");
 
             if (Debugger.IsAttached)
                 Debugger.Break();

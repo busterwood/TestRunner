@@ -72,17 +72,18 @@ namespace TestGui
                     var @class = Classify(line);
                     switch (@class)
                     {
-                        case Class.Output:
+                        case LineClass.Output:
                             lines.Add(line);
                             break;
-                        case Class.Pass:
-                        case Class.Fail:
-                            var args = Parse(line);
+                        case LineClass.Pass:
+                        case LineClass.Ignored:
+                        case LineClass.Fail:
+                            var args = Parse(line, @class);
                             args.Output = lines;
                             Tested?.Invoke(this, args);
                             lines = new List<string>();
                             break;
-                        case Class.Info:
+                        case LineClass.Info:
                             if (line.Contains("Starting new test run of '"))
                             {
                                 RunStarted?.Invoke(this, EventArgs.Empty);
@@ -94,7 +95,7 @@ namespace TestGui
                             }
                             previousInfo = line;
                             break;
-                        case Class.Error:
+                        case LineClass.Error:
                             Error?.Invoke(this, line);
                             break;
                         default:
@@ -112,40 +113,44 @@ namespace TestGui
             int total = int.Parse(bits[0].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).First());
             int passed = int.Parse(bits[1].Split(' ').First());
             int failed= int.Parse(bits[2].Split(' ').First());
-            return new RunFinishedEventArgs { Total = total, Passed = passed, Failed = failed };
+            int ignored = int.Parse(bits[3].Split(' ').First());
+            return new RunFinishedEventArgs { Total = total, Passed = passed, Failed = failed, Ignored = ignored };
         }
 
-        static Class Classify(string line)
+        static LineClass Classify(string line)
         {
             var bits = line.Split(':');
             if (bits.Length < 2)
-                return Class.Output;
+                return LineClass.Output;
             if (bits[0] == "PASS")
-                return Class.Pass;
+                return LineClass.Pass;
             if (bits[0] == "FAIL")
-                return Class.Fail;
+                return LineClass.Fail;
+            if (bits[0] == "IGNORED")
+                return LineClass.Ignored;
             if (bits[1] == " INFO")
-                return Class.Info;
+                return LineClass.Info;
             if (bits[1] == " ERROR")
-                return Class.Error;
-            return Class.Output;
+                return LineClass.Error;
+            return LineClass.Output;
         }        
 
-        enum Class
+        enum LineClass
         {
+            Pass = 1,
+            Fail = 2,
+            Ignored = 3,
             Output,
-            Pass,
-            Fail,
             Info,
             Error,
         }
 
-        TestEventArgs Parse(string line)
+        TestEventArgs Parse(string line, LineClass @class)
         {
             var result = new TestEventArgs();
             var bits = line.Split(new string[] { ": " }, StringSplitOptions.None);
             result.TestName = bits[1];
-            result.Pass = (bits[0].Equals("PASS", StringComparison.Ordinal));
+            result.Result = (TestResult)@class;
             return result;
         }
 
@@ -154,9 +159,16 @@ namespace TestGui
     public class TestEventArgs : EventArgs
     {
         public string TestName { get; set; }
-        public bool Pass { get; set; }
+        public TestResult Result { get; set; }
         public List<string> Output { get; set; }
         public TimeSpan Elapsed { get; set; }
+    }
+
+    public enum TestResult
+    {
+        Pass = 1,
+        Fail = 2,
+        Ignored = 3,
     }
 
     public class RunFinishedEventArgs : EventArgs
@@ -164,5 +176,6 @@ namespace TestGui
         public int Total { get; set; }
         public int Passed { get; set; }
         public int Failed { get; set; }
+        public int Ignored { get; set; }
     }
 }
