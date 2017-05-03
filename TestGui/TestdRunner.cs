@@ -15,11 +15,11 @@ namespace TestGui
         List<string> lines = new List<string>();
 
         public string AsmName { get; }
-        public EventHandler RunStarted;
-        public EventHandler<TestEventArgs> Tested;
-        public EventHandler<RunFinishedEventArgs> RunFinished;
-        public EventHandler<string> Info;
-        public EventHandler<string> Error;
+        public event EventHandler RunStarted;
+        public event EventHandler<TestEventArgs> Tested;
+        public event EventHandler<RunFinishedEventArgs> RunFinished;
+        public event EventHandler<string> Info;
+        public event EventHandler<string> Error;
 
         string previousInfo;
         readonly string[] args;
@@ -105,18 +105,6 @@ namespace TestGui
             }
         }
 
-        private RunFinishedEventArgs ParseTotals(string line)
-        {
-            var infototals = line.Split(':');
-            var totals = infototals.Last();
-            var bits = totals.Split(new string[] { ", " }, StringSplitOptions.None);
-            int total = int.Parse(bits[0].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).First());
-            int passed = int.Parse(bits[1].Split(' ').First());
-            int failed= int.Parse(bits[2].Split(' ').First());
-            int ignored = int.Parse(bits[3].Split(' ').First());
-            return new RunFinishedEventArgs { Total = total, Passed = passed, Failed = failed, Ignored = ignored };
-        }
-
         static LineClass Classify(string line)
         {
             var bits = line.Split(':');
@@ -149,11 +137,33 @@ namespace TestGui
         {
             var result = new TestEventArgs();
             var bits = line.Split(new string[] { ": " }, StringSplitOptions.None);
-            result.TestName = bits[1];
             result.Result = (TestResult)@class;
+            if (@class == LineClass.Pass || @class ==  LineClass.Fail)
+            {
+                bits = bits[1].Split(' '); // TestFixture.TestName in 10 MS
+                result.TestName = bits[0];
+                result.Elapsed = TimeSpan.FromMilliseconds(int.Parse(bits[2]));
+            }
+            else
+            {
+                result.TestName = bits[1];
+            }
+
             return result;
         }
 
+
+        private RunFinishedEventArgs ParseTotals(string line)
+        {
+            var infototals = line.Split(':');
+            var totals = infototals.Last();
+            var bits = totals.Split(new string[] { ", " }, StringSplitOptions.None);
+            int total = int.Parse(bits[0].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).First());
+            int passed = int.Parse(bits[1].Split(' ').First());
+            int failed = int.Parse(bits[2].Split(' ').First());
+            int ignored = int.Parse(bits[3].Split(' ').First());
+            return new RunFinishedEventArgs { Total = total, Passed = passed, Failed = failed, Ignored = ignored };
+        }
     }
 
     public class TestEventArgs : EventArgs
@@ -161,7 +171,7 @@ namespace TestGui
         public string TestName { get; set; }
         public TestResult Result { get; set; }
         public List<string> Output { get; set; }
-        public TimeSpan Elapsed { get; set; }
+        public TimeSpan? Elapsed { get; set; }
     }
 
     public enum TestResult

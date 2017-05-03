@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -19,6 +20,7 @@ namespace Test
         int passed;
         int failed;
         int ignored;
+        Stopwatch watch;
 
         public Stats Statistics => new Stats(testCount, passed, failed, ignored);
 
@@ -31,6 +33,7 @@ namespace Test
             setup = methods.FirstOrDefault(m => m.IsSetup());
             tearDown = methods.FirstOrDefault(m => m.IsTearDown());
             fixtureTimeoutMs = fixture.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
+            watch = new Stopwatch();
         }
 
         public void RunTests()
@@ -38,6 +41,8 @@ namespace Test
             FixtureSetUp();
             foreach (var test in methods)
             {
+                watch.Reset();
+                watch.Start();
                 if (test.IsIgnored())
                 {
                     StdOut.Ignore($"{fixture.Name}.{test.Name}");
@@ -174,21 +179,21 @@ namespace Test
 
         private void Pass(string testName)
         {
-            StdOut.Passed($"{fixture.Name}.{testName}");
+            StdOut.Passed($"{fixture.Name}.{testName} in {watch.ElapsedMilliseconds:D0} MS");
             passed++;
         }
 
         private void Fail(string testName, Exception ex)
         {
             Console.WriteLine(ex);
-            StdOut.Fail($"{fixture.Name}.{testName}");
+            StdOut.Fail($"{fixture.Name}.{testName} in {watch.ElapsedMilliseconds:D0} MS");
             failed++;
         }
 
         private void Fail(string testName, string message)
         {
             Console.WriteLine(message);
-            StdOut.Fail($"{fixture.Name}.{testName}");
+            StdOut.Fail($"{fixture.Name}.{testName} in {watch.ElapsedMilliseconds:D0} MS");
             failed++;
         }
 
