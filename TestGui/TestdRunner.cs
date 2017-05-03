@@ -140,9 +140,9 @@ namespace TestGui
             result.Result = (TestResult)@class;
             if (@class == LineClass.Pass || @class ==  LineClass.Fail)
             {
-                bits = bits[1].Split(' '); // TestFixture.TestName in 10 MS
+                bits = bits[1].Split(new string[] { " in " }, StringSplitOptions.None); // TestFixture.TestName in 10 MS
                 result.TestName = bits[0];
-                result.Elapsed = TimeSpan.FromMilliseconds(int.Parse(bits[2]));
+                result.Elapsed = TimeSpan.FromMilliseconds(int.Parse(bits[1].Split(' ')[0]));
             }
             else
             {
