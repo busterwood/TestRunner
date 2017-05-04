@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Test
 {
@@ -34,6 +35,7 @@ namespace Test
             tearDown = methods.FirstOrDefault(m => m.IsTearDown());
             fixtureTimeoutMs = fixture.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
             watch = new Stopwatch();
+            obj = Activator.CreateInstance(fixture);
         }
 
         public void RunTests()
@@ -51,14 +53,12 @@ namespace Test
                 }
                 else if (test.IsTest())
                 {
-                    obj = Activator.CreateInstance(fixture);
                     testCount++;
                     RunTestLifeCycle(test, null, test.Name);
                     continue;
                 }
                 foreach (var testCase in test.CustomAttributes.Where(a => a.IsTestCase()))
                 {
-                    obj = Activator.CreateInstance(fixture);
                     testCount++;
                     var args = TestCaseArgs(testCase);
                     var testName = TestCaseName(test, args);
@@ -147,25 +147,26 @@ namespace Test
             if (testThread.Join((int)timeoutMs))
                 return; // all good
             
+            
             testThread.Interrupt();
-            if (testThread.Join(100))
-                return; // stopped after interuption
-
-            // last chance - aborting may leave unrealased locks 
-            testThread.Abort();
-            testThread.Join(100);
+            if (!testThread.Join(100))
+            {
+                // last chance - aborting may leave unrealased locks 
+                testThread.Abort();
+                testThread.Join(100);
+            }
+            Fail(testName, $"Timed-out after {(int)timeoutMs:N0} MS");
         }
 
         private void RunTest(MethodInfo test, object[] args, string testName)
         {
             try
             {
-                test.Invoke(obj, args);
-                Pass(testName);
-            }
-            catch (TargetInvocationException ex) when (ex.InnerException.GetType().Name.Equals("AssertionException", StringComparison.Ordinal))
-            {
-                Fail(testName, ex.InnerException.Message);
+                var result = test.Invoke(obj, args) as Task; // support for asyn test methods
+                if (result != null)
+                    WaitForAsyncTestToComplete(testName, result);
+                else
+                    Pass(testName);
             }
             catch (TargetInvocationException ex)
             {
@@ -174,6 +175,23 @@ namespace Test
             catch (Exception ex)
             {
                 Fail(testName, ex);
+            }
+        }
+
+        private void WaitForAsyncTestToComplete(string testName, Task result)
+        {
+            try
+            {
+                result.Wait(); 
+                Pass(testName);
+            }
+            catch (AggregateException ex) when (ex.InnerException is TargetInvocationException)
+            {
+                Fail(testName, ex.InnerException.InnerException);
+            }
+            catch (AggregateException ex)
+            {
+                Fail(testName, ex.InnerException);
             }
         }
 

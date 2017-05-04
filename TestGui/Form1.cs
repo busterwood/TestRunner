@@ -74,6 +74,7 @@ namespace TestGui
             passedFilter.Text = $"Passed";
             failedFilter.Text = $"Failed";
             ignoredFilter.Text = $"Ignored";
+            slowFilter.Text = $"Slow";
 
             testsList.Items.Clear();
             slowCount = 0;

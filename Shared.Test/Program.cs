@@ -76,7 +76,9 @@ namespace Test
             try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-                return Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), asmName + ".dll"));
+                var path = Path.Combine(Directory.GetCurrentDirectory(), asmName + ".dll");
+                return Assembly.LoadFile(path);
+                
             }
             catch (Exception ex)
             {
@@ -90,6 +92,10 @@ namespace Test
             var simpleName = args.Name.Split(',').First();
             var fullPath = Path.Combine(Directory.GetCurrentDirectory(), simpleName + ".dll");
             Assembly loaded = null;
+            if (File.Exists(fullPath))
+                loaded = Assembly.LoadFile(fullPath);
+            else
+                fullPath = Path.Combine(Directory.GetCurrentDirectory(), simpleName + ".exe");
             if (File.Exists(fullPath))
                 loaded = Assembly.LoadFile(fullPath);
             if (loaded == null)
