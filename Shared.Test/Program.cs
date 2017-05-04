@@ -30,14 +30,16 @@ namespace Test
             if (asm == null)
                 return 2;
 
-            List<Type> fixtures = FindFixutres(asm);
-            if (fixtures == null)
+            List<Type> fixtureTypes = FindFixutres(asm);
+            if (fixtureTypes == null)
                 return 3;
 
-            StdErr.Info($"Found {fixtures.Count} test fixtures to run");
+            List<FixtureRunner> fixtures = CreateFixtureRunners(fixtureTypes);
+
+            StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures");
 
             Stats totals = Stats.Zero;    
-            foreach (var fixture in fixtures)
+            foreach (var fixture in fixtureTypes)
             {
                 totals += RunFixture(fixture);
             }
@@ -47,6 +49,23 @@ namespace Test
             if (Debugger.IsAttached)
                 Debugger.Break();
             return 0;
+        }
+
+        private static List<FixtureRunner> CreateFixtureRunners(List<Type> fixtureTypes)
+        {
+            var runners = new List<FixtureRunner>(fixtureTypes.Count);
+            foreach (var type in fixtureTypes)
+            {
+                try
+                {
+                    runners.Add(new FixtureRunner(type));
+                }
+                catch (Exception ex)
+                {
+                    StdErr.Error($"Cannot create fixture runner for '{type.FullName}': {ex}");
+                }
+            }
+            return runners;
         }
 
         private static void SetCustomConfigFile(string asmName)

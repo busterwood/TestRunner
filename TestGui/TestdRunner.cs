@@ -15,7 +15,7 @@ namespace TestGui
         List<string> lines = new List<string>();
 
         public string AsmName { get; }
-        public event EventHandler RunStarted;
+        public event EventHandler<RunStartedEventArgs> RunStarted;
         public event EventHandler<TestEventArgs> Tested;
         public event EventHandler<RunFinishedEventArgs> RunFinished;
         public event EventHandler<string> Info;
@@ -86,14 +86,19 @@ namespace TestGui
                         case LineClass.Info:
                             if (line.Contains("Starting new test run of '"))
                             {
-                                RunStarted?.Invoke(this, EventArgs.Empty);
+                                line = input.ReadLine();
+                                if (line == null)
+                                    return;
+                                int tests = ParseNumberOfTests(line);
+                                RunStarted?.Invoke(this, new RunStartedEventArgs { Total = tests });
                             }
-                            if (line.Contains("Finished test run of '"))
+                            else if (line.Contains("Finished test run of '"))
                             {
                                 var stats = ParseTotals(previousInfo);
                                 RunFinished?.Invoke(this, stats);
                             }
-                            previousInfo = line;
+                            else
+                                previousInfo = line;
                             break;
                         case LineClass.Error:
                             Error?.Invoke(this, line);
@@ -103,6 +108,13 @@ namespace TestGui
                     }
                 }
             }
+        }
+
+        private int ParseNumberOfTests(string line)
+        {
+            var testAndFixtures = line.Split(new string[] { ", " }, StringSplitOptions.None);
+            var bits = testAndFixtures[0].Split(' ');
+            return int.Parse(bits[2]);
         }
 
         static LineClass Classify(string line)
@@ -179,6 +191,11 @@ namespace TestGui
         Pass = 1,
         Fail = 2,
         Ignored = 3,
+    }
+
+    public class RunStartedEventArgs : EventArgs
+    {
+        public int Total { get; set; }
     }
 
     public class RunFinishedEventArgs : EventArgs

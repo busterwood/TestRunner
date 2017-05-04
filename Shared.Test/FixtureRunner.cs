@@ -35,11 +35,26 @@ namespace Test
             tearDown = methods.FirstOrDefault(m => m.IsTearDown());
             fixtureTimeoutMs = fixture.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
             watch = new Stopwatch();
-            obj = Activator.CreateInstance(fixture);
+        }
+
+        public int CountTests()
+        {
+            int count = 0;
+            foreach (var test in methods)
+            {
+                if (test.IsIgnored())
+                    continue;
+                if (test.IsTest())
+                    count++;
+                else
+                    count += test.CustomAttributes.Where(a => a.IsTestCase()).Count();
+            }
+            return count;
         }
 
         public void RunTests()
         {
+            obj = Activator.CreateInstance(fixture);
             FixtureSetUp();
             foreach (var test in methods)
             {
@@ -57,7 +72,7 @@ namespace Test
                     RunTestLifeCycle(test, null, test.Name);
                     continue;
                 }
-                foreach (var testCase in test.CustomAttributes.Where(a => a.IsTestCase()))
+                else foreach (var testCase in test.CustomAttributes.Where(a => a.IsTestCase()))
                 {
                     testCount++;
                     var args = TestCaseArgs(testCase);

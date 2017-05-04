@@ -25,7 +25,6 @@ namespace TestGui
         ListViewItem slowFilter;
         int slowCount;
 
-
         public Tests()
         {
             InitializeComponent();
@@ -63,11 +62,11 @@ namespace TestGui
                .SetValue(ctrl, true, null);
         }
 
-        private void RunStarted(object sender, EventArgs e)
+        private void RunStarted(object sender, RunStartedEventArgs e)
         {
             if (InvokeRequired)
             {
-                BeginInvoke((EventHandler)RunStarted, sender, e);
+                BeginInvoke((EventHandler<RunStartedEventArgs>)RunStarted, sender, e);
                 return;
             }
             testsList.Cursor = Cursors.AppStarting;
@@ -75,8 +74,10 @@ namespace TestGui
             failedFilter.Text = $"Failed";
             ignoredFilter.Text = $"Ignored";
             slowFilter.Text = $"Slow";
-
             testsList.Items.Clear();
+            statusProgress.Value = 0;
+            statusProgress.Maximum = e.Total;
+            statusText.Text = $"Running {e.Total} tests";
             slowCount = 0;
         }
 
@@ -91,6 +92,8 @@ namespace TestGui
             failedFilter.Text = $"Failed ({e.Failed})";
             ignoredFilter.Text = $"Ignored ({e.Ignored})";
             slowFilter.Text = $"Slow ({slowCount})";
+            statusProgress.Value = 0;
+            statusText.Text = $"";
             testsList.Cursor = Cursors.Default;
         }
 
@@ -105,6 +108,8 @@ namespace TestGui
             AddTestItem(e);
             if (e.Elapsed > TimeSpan.FromSeconds(1))
                 AddSlowItem(e);
+            if (statusProgress.Value < statusProgress.Maximum)
+                statusProgress.Value++;
         }
 
         private void AddTestItem(TestEventArgs e)
