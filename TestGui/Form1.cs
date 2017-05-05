@@ -52,6 +52,8 @@ namespace TestGui
             Runner.RunFinished += RunFinished;
             Runner.Tested += Tested;
             Runner.Start();
+
+            statusText.Text = "Monitoring " + Environment.CurrentDirectory;
         }
 
         private void SetDoubleBuffer(Control ctrl)
@@ -70,6 +72,8 @@ namespace TestGui
                 return;
             }
             testsList.Cursor = Cursors.AppStarting;
+            runTestsAgainMenuItem.Enabled = false;
+            allFilter.Text = $"All";
             passedFilter.Text = $"Passed";
             failedFilter.Text = $"Failed";
             ignoredFilter.Text = $"Ignored";
@@ -79,6 +83,7 @@ namespace TestGui
             statusProgress.Maximum = e.Total;
             statusText.Text = $"Running {e.Total} tests";
             slowCount = 0;
+            outputText.Text = "";
         }
 
         private void RunFinished(object sender, RunFinishedEventArgs e)
@@ -88,12 +93,14 @@ namespace TestGui
                 BeginInvoke((EventHandler<RunFinishedEventArgs>)RunFinished, sender, e);
                 return;
             }
+            allFilter.Text = $"All ({e.Total})";
             passedFilter.Text = $"Passed ({e.Passed})";
             failedFilter.Text = $"Failed ({e.Failed})";
             ignoredFilter.Text = $"Ignored ({e.Ignored})";
             slowFilter.Text = $"Slow ({slowCount})";
             statusProgress.Value = 0;
-            statusText.Text = $"";
+            statusText.Text = "Monitoring " + Environment.CurrentDirectory;
+            runTestsAgainMenuItem.Enabled = true;
             testsList.Cursor = Cursors.Default;
         }
 
@@ -115,6 +122,7 @@ namespace TestGui
         private void AddTestItem(TestEventArgs e)
         {
             var li = new ListViewItem(e.TestName);
+            li.SubItems.Add(e.TestFixure);
             switch (e.Result)
             {
                 case TestResult.Pass:
@@ -134,6 +142,11 @@ namespace TestGui
             }
             if (e.Elapsed.HasValue)
                 li.SubItems.Add(e.Elapsed.Value.TotalMilliseconds.ToString("N0"));
+            else
+                li.SubItems.Add("");
+
+            if (e.Output.Count > 0)
+                li.SubItems.Add("Yes");
             li.Tag = e.Output;
             testsList.Items.Add(li);
         }
@@ -141,6 +154,7 @@ namespace TestGui
         private void AddSlowItem(TestEventArgs e)
         {
             var li = new ListViewItem(e.TestName);
+            li.SubItems.Add(e.TestFixure);
             switch (e.Result)
             {
                 case TestResult.Pass:
@@ -155,9 +169,9 @@ namespace TestGui
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            li.Group = slowGrp;
             li.SubItems.Add(e.Elapsed.Value.TotalMilliseconds.ToString("N0"));
             li.Tag = e.Output;
+            li.Group = slowGrp;
             testsList.Items.Add(li);
             slowCount++;
         }
@@ -207,5 +221,20 @@ namespace TestGui
             }
         }
 
+        private void detailsMenuItem_Click(object sender, EventArgs e)
+        {
+            testsList.View = View.Details;
+        }
+
+        private void listMenuItem_Click(object sender, EventArgs e)
+        {
+            testsList.View = View.Tile;
+        }
+
+        private void runTestsAgainMenuItem_Click(object sender, EventArgs e)
+        {
+            runTestsAgainMenuItem.Enabled = false;
+            Runner.RunTests();
+        }
     }
 }

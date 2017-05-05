@@ -30,7 +30,7 @@ namespace TestGui
         {
             LvGroup group = new LvGroup();
             group.cbSize = Marshal.SizeOf(group);
-            group.state = (int)GroupState.EXPANDED;
+            group.state = (int)(GroupState.EXPANDED | GroupState.COLLAPSIBLE);
             group.mask = LVGF_STATE;
             group.iGroupId = lwgroup.ListView.Groups.IndexOf(lwgroup);
             SendMessage(lwgroup.ListView.Handle, LVM_SETGROUPINFO, group.iGroupId, group);
@@ -82,7 +82,8 @@ namespace TestGui
             public int cchSubsetTitle;
         }
 
-        enum GroupState
+        [Flags]
+        enum GroupState : int
         {
             COLLAPSIBLE = 8,
             COLLAPSED = 1,

@@ -43,17 +43,26 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.testsList = new System.Windows.Forms.ListView();
             this.TestHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.fixtureColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TimeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.outputColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.detailsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.listMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testIcons32 = new System.Windows.Forms.ImageList(this.components);
             this.testIcons16 = new System.Windows.Forms.ImageList(this.components);
             this.categoriesList = new System.Windows.Forms.ListView();
             this.outputText = new System.Windows.Forms.RichTextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.statusText = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.runTestsAgainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.contextMenu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -82,7 +91,10 @@
             // 
             this.testsList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.TestHeader,
-            this.TimeHeader});
+            this.fixtureColumn,
+            this.TimeHeader,
+            this.outputColumn});
+            this.testsList.ContextMenuStrip = this.contextMenu;
             this.testsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.testsList.Font = new System.Drawing.Font("Trebuchet MS", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.testsList.FullRowSelect = true;
@@ -100,11 +112,13 @@
             listViewGroup8,
             listViewGroup9});
             this.testsList.HideSelection = false;
-            this.testsList.Location = new System.Drawing.Point(141, 0);
+            this.testsList.LargeImageList = this.testIcons32;
+            this.testsList.Location = new System.Drawing.Point(120, 0);
             this.testsList.Margin = new System.Windows.Forms.Padding(4);
             this.testsList.MultiSelect = false;
             this.testsList.Name = "testsList";
-            this.testsList.Size = new System.Drawing.Size(506, 674);
+            this.testsList.ShowItemToolTips = true;
+            this.testsList.Size = new System.Drawing.Size(527, 674);
             this.testsList.SmallImageList = this.testIcons16;
             this.testsList.TabIndex = 1;
             this.testsList.UseCompatibleStateImageBehavior = false;
@@ -114,13 +128,54 @@
             // TestHeader
             // 
             this.TestHeader.Text = "Test";
-            this.TestHeader.Width = 378;
+            this.TestHeader.Width = 262;
+            // 
+            // fixtureColumn
+            // 
+            this.fixtureColumn.Text = "Fixture";
+            this.fixtureColumn.Width = 127;
             // 
             // TimeHeader
             // 
             this.TimeHeader.Text = "Time (MS)";
             this.TimeHeader.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.TimeHeader.Width = 80;
+            this.TimeHeader.Width = 67;
+            // 
+            // outputColumn
+            // 
+            this.outputColumn.Text = "Output?";
+            // 
+            // contextMenu
+            // 
+            this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.detailsMenuItem,
+            this.listMenuItem,
+            this.toolStripMenuItem1,
+            this.runTestsAgainMenuItem});
+            this.contextMenu.Name = "contextMenu";
+            this.contextMenu.Size = new System.Drawing.Size(155, 76);
+            // 
+            // detailsMenuItem
+            // 
+            this.detailsMenuItem.Name = "detailsMenuItem";
+            this.detailsMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.detailsMenuItem.Text = "Details";
+            this.detailsMenuItem.Click += new System.EventHandler(this.detailsMenuItem_Click);
+            // 
+            // listMenuItem
+            // 
+            this.listMenuItem.Name = "listMenuItem";
+            this.listMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.listMenuItem.Text = "List";
+            this.listMenuItem.Click += new System.EventHandler(this.listMenuItem_Click);
+            // 
+            // testIcons32
+            // 
+            this.testIcons32.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("testIcons32.ImageStream")));
+            this.testIcons32.TransparentColor = System.Drawing.Color.Transparent;
+            this.testIcons32.Images.SetKeyName(0, "tick-32.ico");
+            this.testIcons32.Images.SetKeyName(1, "cross-32.ico");
+            this.testIcons32.Images.SetKeyName(2, "slow-32.ico");
             // 
             // testIcons16
             // 
@@ -162,7 +217,7 @@
             this.categoriesList.Location = new System.Drawing.Point(0, 0);
             this.categoriesList.Margin = new System.Windows.Forms.Padding(4);
             this.categoriesList.Name = "categoriesList";
-            this.categoriesList.Size = new System.Drawing.Size(141, 674);
+            this.categoriesList.Size = new System.Drawing.Size(120, 674);
             this.categoriesList.SmallImageList = this.testIcons16;
             this.categoriesList.TabIndex = 0;
             this.categoriesList.UseCompatibleStateImageBehavior = false;
@@ -171,6 +226,7 @@
             // 
             // outputText
             // 
+            this.outputText.BackColor = System.Drawing.SystemColors.Window;
             this.outputText.Dock = System.Windows.Forms.DockStyle.Fill;
             this.outputText.Location = new System.Drawing.Point(0, 0);
             this.outputText.Name = "outputText";
@@ -193,14 +249,26 @@
             // statusProgress
             // 
             this.statusProgress.Name = "statusProgress";
-            this.statusProgress.Size = new System.Drawing.Size(150, 16);
+            this.statusProgress.Size = new System.Drawing.Size(120, 16);
             // 
             // statusText
             // 
             this.statusText.Name = "statusText";
-            this.statusText.Size = new System.Drawing.Size(1221, 17);
+            this.statusText.Size = new System.Drawing.Size(1251, 17);
             this.statusText.Spring = true;
             this.statusText.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(151, 6);
+            // 
+            // runTestsAgainMenuItem
+            // 
+            this.runTestsAgainMenuItem.Name = "runTestsAgainMenuItem";
+            this.runTestsAgainMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.runTestsAgainMenuItem.Text = "Run tests again";
+            this.runTestsAgainMenuItem.Click += new System.EventHandler(this.runTestsAgainMenuItem_Click);
             // 
             // Tests
             // 
@@ -218,6 +286,7 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.contextMenu.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -237,6 +306,14 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar statusProgress;
         private System.Windows.Forms.ToolStripStatusLabel statusText;
+        private System.Windows.Forms.ColumnHeader outputColumn;
+        private System.Windows.Forms.ContextMenuStrip contextMenu;
+        private System.Windows.Forms.ToolStripMenuItem detailsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem listMenuItem;
+        private System.Windows.Forms.ColumnHeader fixtureColumn;
+        private System.Windows.Forms.ImageList testIcons32;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem runTestsAgainMenuItem;
     }
 }
 

@@ -59,10 +59,15 @@ namespace Test.Daemon
             for(;;)
             {
                 DateTime value;
-                bool got = changes.TryTake(out value, TimeSpan.FromSeconds(2));
+                bool got = changes.TryTake(out value, TimeSpan.FromSeconds(1));
                 if (!got)
                     return;
             }
+        }
+
+        public void TriggerChange()
+        {
+            changes.Add(DateTime.UtcNow);
         }
     }
 }

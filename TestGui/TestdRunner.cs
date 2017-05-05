@@ -23,6 +23,7 @@ namespace TestGui
 
         string previousInfo;
         readonly string[] args;
+        Process testdProcess;
 
         public TestdRunner(string[] args)
         {
@@ -47,11 +48,11 @@ namespace TestGui
                 UseShellExecute = false,
                 WorkingDirectory = Directory.GetCurrentDirectory(),                                
             };
-            Process p = Process.Start(si);
-            p.Exited += Testd_Exited;
-            p.EnableRaisingEvents = true;
-            Task.Run(() => ParseAutoputAsync(p.StandardError));
-            Task.Run(() => ParseAutoputAsync(p.StandardOutput));
+            testdProcess = Process.Start(si);
+            testdProcess.Exited += Testd_Exited;
+            testdProcess.EnableRaisingEvents = true;
+            Task.Run(() => ParseAutoputAsync(testdProcess.StandardError));
+            Task.Run(() => ParseAutoputAsync(testdProcess.StandardOutput));
         }
 
         private void Testd_Exited(object sender, EventArgs e)
@@ -153,12 +154,12 @@ namespace TestGui
             if (@class == LineClass.Pass || @class ==  LineClass.Fail)
             {
                 bits = bits[1].Split(new string[] { " in " }, StringSplitOptions.None); // TestFixture.TestName in 10 MS
-                result.TestName = bits[0];
+                result.FullTestName = bits[0];
                 result.Elapsed = TimeSpan.FromMilliseconds(int.Parse(bits[1].Split(' ')[0]));
             }
             else
             {
-                result.TestName = bits[1];
+                result.FullTestName = bits[1];
             }
 
             return result;
@@ -176,11 +177,33 @@ namespace TestGui
             int ignored = int.Parse(bits[3].Split(' ').First());
             return new RunFinishedEventArgs { Total = total, Passed = passed, Failed = failed, Ignored = ignored };
         }
+
+        public void RunTests()
+        {
+            testdProcess.StandardInput.WriteLine("run");
+        }
     }
 
     public class TestEventArgs : EventArgs
     {
-        public string TestName { get; set; }
+        public string TestFixure
+        {
+            get
+            {
+                var firstDot = FullTestName.IndexOf('.');
+                return FullTestName.Substring(0, firstDot);
+            }
+        }
+
+        public string TestName
+        {
+            get
+            {
+                var firstDot = FullTestName.IndexOf('.');
+                return FullTestName.Substring(firstDot+1);
+            }
+        }
+        public string FullTestName { get; set; }
         public TestResult Result { get; set; }
         public List<string> Output { get; set; }
         public TimeSpan? Elapsed { get; set; }

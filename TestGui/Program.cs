@@ -13,8 +13,7 @@ namespace TestGui
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            TestdRunner runner = new TestdRunner(args);
-            var tests = new Tests() { Runner=runner };
+            var tests = new Tests() { Runner = new TestdRunner(args) };
             Application.Run(tests);
         }
     }

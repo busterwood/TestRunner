@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Test
 {
@@ -39,11 +37,12 @@ namespace Test
             StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures");
 
             Stats totals = Stats.Zero;    
-            foreach (var fixture in fixtureTypes)
+            foreach (var fixture in fixtures)
             {
                 totals += RunFixture(fixture);
             }
             sw.Stop();
+
             StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, {totals.Ignored} ignored, in {sw.Elapsed.TotalSeconds:N1} seconds");
 
             if (Debugger.IsAttached)
@@ -71,21 +70,20 @@ namespace Test
         private static void SetCustomConfigFile(string asmName)
         {
             var configFilePath = Path.Combine(Directory.GetCurrentDirectory(), asmName, ".dll.config");
-            if (File.Exists("configFilePath"))
+            if (File.Exists(configFilePath))
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", configFilePath);
         }
 
-        private static Stats RunFixture(Type fixture)
+        private static Stats RunFixture(FixtureRunner fixture)
         {
             try
             {
-                var f = new FixtureRunner(fixture);
-                f.RunTests();
-                return f.Statistics;
+                fixture.RunTests();
+                return fixture.Statistics;
             }
             catch (Exception ex)
             {
-                StdErr.Error($"Cannot run fixture '{fixture.FullName}': {ex}");
+                StdErr.Error($"Cannot run fixture '{fixture.Type.FullName}': {ex}");
                 return Stats.Zero;
             }
         }
@@ -128,7 +126,7 @@ namespace Test
             {
                 return testAsm
                     .GetExportedTypes()
-                    .Where(t => t.IsTestFixture() && !t.IsIgnored())
+                    .Where(t => !t.IsAbstract && t.IsTestFixture() && !t.IsIgnored())
                     .ToList();
             }
             catch (Exception ex)

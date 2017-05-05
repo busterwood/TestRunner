@@ -22,8 +22,11 @@ namespace Test
         int failed;
         int ignored;
         Stopwatch watch;
+        int testFinished;
 
         public Stats Statistics => new Stats(testCount, passed, failed, ignored);
+
+        public Type Type => fixture;
 
         public FixtureRunner(Type fixture)
         {
@@ -156,25 +159,26 @@ namespace Test
 
         private void RunTestWithTimeout(MethodInfo test, object[] args, string testName, object timeoutMs)
         {
+            testFinished = 0;
             Thread testThread = new Thread(() => RunTest(test, args, testName));
             testThread.Start();
 
             if (testThread.Join((int)timeoutMs))
                 return; // all good
-            
-            
+
             testThread.Interrupt();
-            if (!testThread.Join(100))
+            if (!testThread.Join(50))
             {
                 // last chance - aborting may leave unrealased locks 
                 testThread.Abort();
-                testThread.Join(100);
+                testThread.Join();
             }
             Fail(testName, $"Timed-out after {(int)timeoutMs:N0} MS");
         }
 
         private void RunTest(MethodInfo test, object[] args, string testName)
         {
+            Interlocked.Exchange(ref testFinished, 0);
             try
             {
                 var result = test.Invoke(obj, args) as Task; // support for asyn test methods
@@ -212,12 +216,14 @@ namespace Test
 
         private void Pass(string testName)
         {
+            if (EndOfTestAlreadyReported()) return;
             StdOut.Passed($"{fixture.Name}.{testName} in {watch.ElapsedMilliseconds:D0} MS");
             passed++;
         }
 
         private void Fail(string testName, Exception ex)
         {
+            if (EndOfTestAlreadyReported()) return;
             Console.WriteLine(ex);
             StdOut.Fail($"{fixture.Name}.{testName} in {watch.ElapsedMilliseconds:D0} MS");
             failed++;
@@ -225,10 +231,13 @@ namespace Test
 
         private void Fail(string testName, string message)
         {
+            if (EndOfTestAlreadyReported()) return;
             Console.WriteLine(message);
             StdOut.Fail($"{fixture.Name}.{testName} in {watch.ElapsedMilliseconds:D0} MS");
             failed++;
         }
+
+        private bool EndOfTestAlreadyReported() => Interlocked.CompareExchange(ref testFinished, 1, 0) == 1;
 
         private bool SetUp(MethodInfo test)
         {

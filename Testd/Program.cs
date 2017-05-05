@@ -32,7 +32,16 @@ namespace Test.Daemon
             var monitor = new FolderMonitor(Directory.GetCurrentDirectory());
             monitor.Changed += Monitor_Changed;
             monitor.Start();
-            Console.ReadLine();
+
+            for(; ;)
+            {
+                var line = Console.ReadLine();
+                if (string.IsNullOrEmpty(line))
+                    break;
+                if (line.Equals("run", StringComparison.OrdinalIgnoreCase))
+                    monitor.TriggerChange();
+            }
+
             return 0;
         }
 
