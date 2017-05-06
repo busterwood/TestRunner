@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace TestGui
 {
-    public partial class Tests : Form
+    public partial class TestFixtureForm : Form
     {
         const int TickImageIdx = 0;
         const int CrossImageIdx = 1;
@@ -25,7 +25,7 @@ namespace TestGui
         ListViewItem slowFilter;
         int slowCount;
 
-        public Tests()
+        public TestFixtureForm()
         {
             InitializeComponent();
         }
@@ -35,7 +35,7 @@ namespace TestGui
         private void Tests_Load(object sender, EventArgs e)
         {
             this.Text = Runner.AsmName;
-            SetDoubleBuffer(testsList);
+            testsList.SetDoubleBuffer();
 
             passedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("passedGroup", StringComparison.OrdinalIgnoreCase));
             failedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("failedGroup", StringComparison.OrdinalIgnoreCase));
@@ -53,16 +53,9 @@ namespace TestGui
             Runner.Tested += Tested;
             Runner.Start();
 
-            statusText.Text = "Monitoring " + Environment.CurrentDirectory;
+            statusText.Text = "Monitoring " + Runner.Folder;
         }
 
-        private void SetDoubleBuffer(Control ctrl)
-        {
-            ctrl
-               .GetType()
-               .GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)
-               .SetValue(ctrl, true, null);
-        }
 
         private void RunStarted(object sender, RunStartedEventArgs e)
         {
@@ -99,7 +92,7 @@ namespace TestGui
             ignoredFilter.Text = $"Ignored ({e.Ignored})";
             slowFilter.Text = $"Slow ({slowCount})";
             statusProgress.Value = 0;
-            statusText.Text = "Monitoring " + Environment.CurrentDirectory;
+            statusText.Text = "Monitoring " + Runner.Folder;
             runTestsAgainMenuItem.Enabled = true;
             testsList.Cursor = Cursors.Default;
         }
@@ -235,6 +228,11 @@ namespace TestGui
         {
             runTestsAgainMenuItem.Enabled = false;
             Runner.RunTests();
+        }
+
+        private void TestFixtureForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Runner.Stop();
         }
     }
 }

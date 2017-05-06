@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,14 @@ namespace TestGui
         [DllImport("user32.dll")]
         static extern int SendMessage(IntPtr window, int message, int wParam, LvGroup lParam);
 
+        public static void SetDoubleBuffer(this ListView listView)
+        {
+            listView
+               .GetType()
+               .GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)
+               .SetValue(listView, true, null);
+        }
+
         public static void Collapse(this ListViewGroup lwgroup)
         {
             LvGroup group = new LvGroup();
@@ -30,7 +39,7 @@ namespace TestGui
         {
             LvGroup group = new LvGroup();
             group.cbSize = Marshal.SizeOf(group);
-            group.state = (int)(GroupState.EXPANDED | GroupState.COLLAPSIBLE);
+            group.state = (int)(GroupState.EXPANDED);
             group.mask = LVGF_STATE;
             group.iGroupId = lwgroup.ListView.Groups.IndexOf(lwgroup);
             SendMessage(lwgroup.ListView.Handle, LVM_SETGROUPINFO, group.iGroupId, group);

@@ -10,7 +10,8 @@ namespace Test.Daemon
     class Program
     {
         static string asmName;
-        static bool x64;
+        static string testExe = "Test.exe";
+        static Process testProcess;
 
         static int Main(string[] argv)
         {
@@ -18,7 +19,12 @@ namespace Test.Daemon
 
             if (string.Equals(args[0], "--x64", StringComparison.OrdinalIgnoreCase))
             {
-                x64 = true;
+                testExe = "TestX64.exe";
+                args.RemoveAt(0);
+            }
+            else if (string.Equals(args[0], "--x86", StringComparison.OrdinalIgnoreCase))
+            {
+                testExe = "TestX86.exe";
                 args.RemoveAt(0);
             }
 
@@ -33,7 +39,7 @@ namespace Test.Daemon
             monitor.Changed += Monitor_Changed;
             monitor.Start();
 
-            for(; ;)
+            for(;;)
             {
                 var line = Console.ReadLine();
                 if (string.IsNullOrEmpty(line))
@@ -41,7 +47,7 @@ namespace Test.Daemon
                 if (line.Equals("run", StringComparison.OrdinalIgnoreCase))
                     monitor.TriggerChange();
             }
-
+            testProcess?.Kill();
             return 0;
         }
 
@@ -52,7 +58,7 @@ namespace Test.Daemon
             var location = Path.GetDirectoryName(asm.Location);
             var si = new ProcessStartInfo
             {
-                FileName = Path.Combine(location, $"Test{(x64 ? "X64" : "")}.exe"),
+                FileName = Path.Combine(location, testExe),
                 Arguments = asmName,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
@@ -60,13 +66,14 @@ namespace Test.Daemon
                 UseShellExecute = false,
                 WorkingDirectory = Directory.GetCurrentDirectory(),
             };
-            Process p = Process.Start(si);
+            testProcess = Process.Start(si);
             var tasks = new Task[] {
-                Task.Run(() => EchoAsync(p.StandardError, Console.Error)),
-                Task.Run(() => EchoAsync(p.StandardOutput, Console.Out)),
+                Task.Run(() => EchoAsync(testProcess.StandardError, Console.Error)),
+                Task.Run(() => EchoAsync(testProcess.StandardOutput, Console.Out)),
             };
             Task.WaitAll(tasks);
-            p.WaitForExit(); //TODO: timeout and terminate
+            testProcess.WaitForExit(); //TODO: timeout and terminate
+            testProcess = null;
             StdErr.Info($"Finished test run of '{asmName}'");
         }
 

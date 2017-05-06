@@ -21,17 +21,20 @@ namespace TestGui
         public event EventHandler<string> Info;
         public event EventHandler<string> Error;
 
-        string previousInfo;
         readonly string[] args;
         Process testdProcess;
+        string previousInfo;
 
-        public TestdRunner(string[] args)
+        public TestdRunner(string folder, string[] args)
         {
+            this.Folder = folder;
             this.args = args;
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
             this.AsmName = args.First(a => !a.StartsWith("--", StringComparison.Ordinal));
         }
+
+        public string Folder { get; }
 
         public void Start()
         {
@@ -46,7 +49,7 @@ namespace TestGui
                 RedirectStandardInput = true,
                 CreateNoWindow = true,
                 UseShellExecute = false,
-                WorkingDirectory = Directory.GetCurrentDirectory(),                                
+                WorkingDirectory = Folder,                                
             };
             testdProcess = Process.Start(si);
             testdProcess.Exited += Testd_Exited;
@@ -115,7 +118,9 @@ namespace TestGui
         {
             var testAndFixtures = line.Split(new string[] { ", " }, StringSplitOptions.None);
             var bits = testAndFixtures[0].Split(' ');
-            return int.Parse(bits[2]);
+            int count;
+            int.TryParse(bits[2], out count);
+            return count;
         }
 
         static LineClass Classify(string line)
@@ -181,6 +186,11 @@ namespace TestGui
         public void RunTests()
         {
             testdProcess.StandardInput.WriteLine("run");
+        }
+
+        internal void Stop()
+        {
+            testdProcess.StandardInput.WriteLine();
         }
     }
 

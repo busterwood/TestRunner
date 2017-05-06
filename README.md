@@ -1,7 +1,7 @@
 # TestRunner
 Continuous test runner for NUnit 2 and 3
 
-# test.exe and testx64.exe
+# test.exe (testx64.exe and testx86.exe)
 
 ```
 test.exe assembly
@@ -23,7 +23,7 @@ Note that other properties of the `Test` and `TestCase` attribuites are **not** 
 # testd.exe
 
 ```
-testd.exe [--x64] assembly
+testd.exe [--x64] [--x86] assembly
 ```
 
 Monitors the *current directory* for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
