@@ -31,10 +31,11 @@ Monitors the *current directory* for changes to dll and exe files, and runs test
 # TestGui.exe
 
 ```
-TestGui.exe [--x64] assembly
+TestGui.exe
 ```
 
-Uses `testd.exe` to monitor the *current directory* for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
+Discovers unit test projects relative to the *current directory*.  Double-click a test project to start testing.
+Uses `testd.exe` to monitor the selected build for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
 
 ![screen shot](gui.png)
 
