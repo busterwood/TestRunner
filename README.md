@@ -1,7 +1,7 @@
 # TestRunner
 Continuous test runner for NUnit 2 and 3
 
-# test.exe
+# test.exe and testx64.exe
 
 ```
 test.exe assembly
@@ -18,14 +18,25 @@ Supports:
 * `[Timeout]` attruibute on methods and the class level
 
 Test results are output to StdOut, information is returned on StdErr.
+Note that other properties of the `Test` and `TestCase` attribuites are **not** supported, e.g `ExpectException`, `ExceptionMessage`.
 
 # testd.exe
 
 ```
-testd.exe assembly
+testd.exe [--x64] assembly
 ```
 
-Monitors the *current directory* for changes to dll and exe files, and runs tests (via `test.exe) when changes are found.
+Monitors the *current directory* for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
+
+# TestGui.exe
+
+```
+TestGui.exe [--x64] assembly
+```
+
+Uses `testd.exe` to monitor the *current directory* for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
+
+![screen shot](gui.png)
 
 ## Why
 
