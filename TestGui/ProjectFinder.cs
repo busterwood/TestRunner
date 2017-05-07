@@ -67,7 +67,7 @@ namespace TestGui
 
         public string Folder { get; }
 
-        public DateTime LastChanged
+        public DateTime LastChangedUtc
         {
             get { return lastChanged; }
             set
@@ -83,9 +83,9 @@ namespace TestGui
         {
             Folder = folder;
             var path = Path.Combine(folder, asmName);
-            LastChanged = File.GetLastWriteTimeUtc(path);
+            LastChangedUtc = File.GetLastWriteTimeUtc(path);
             var watcher = new FileSystemWatcher(folder, asmName);
-            watcher.Changed += (sender, args) => LastChanged = File.GetLastWriteTimeUtc(path);
+            watcher.Changed += (sender, args) => LastChangedUtc = File.GetLastWriteTimeUtc(path);
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.EnableRaisingEvents = true;
         }

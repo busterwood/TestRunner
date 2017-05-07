@@ -26,18 +26,21 @@ Note that other properties of the `Test` and `TestCase` attribuites are **not** 
 testd.exe [--x64] [--x86] assembly
 ```
 
-Monitors the *current directory* for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
+Monitors the *current directory* for changes to dll and exe files, and runs tests (via `test.exe` or `testx64.exe` or `testx86.exe`) when changes are found.
 
 # TestGui.exe
 
 ```
-TestGui.exe
+TestGui.exe [assembly]
 ```
 
-Discovers unit test projects relative to the *current directory*.  Double-click a test project to start testing.
-Uses `testd.exe` to monitor the selected build for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
+When started with no arguments `TestGui.exe` discovers unit test projects relative to the *current directory*.  Double-clicking a test project start testing.
 
-![screen shot](gui.png)
+![Project](projects.png)
+
+When passed an *assembly* uses `testd.exe` to monitor the selected build for changes to dll and exe files, and runs tests (via `test.exe`or `testx64.exe`) when changes are found.
+
+![Tests](tests.png)
 
 ## Why
 

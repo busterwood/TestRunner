@@ -28,6 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Up to 4 days old", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Up to 4 weeks old", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Older", System.Windows.Forms.HorizontalAlignment.Left);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.projectsList = new System.Windows.Forms.ListView();
@@ -62,6 +65,16 @@
             this.buildColumn});
             this.projectsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.projectsList.FullRowSelect = true;
+            listViewGroup1.Header = "Up to 4 days old";
+            listViewGroup1.Name = "recentGroup";
+            listViewGroup2.Header = "Up to 4 weeks old";
+            listViewGroup2.Name = "midGroup";
+            listViewGroup3.Header = "Older";
+            listViewGroup3.Name = "oldGroup";
+            this.projectsList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3});
             this.projectsList.Location = new System.Drawing.Point(0, 0);
             this.projectsList.MultiSelect = false;
             this.projectsList.Name = "projectsList";

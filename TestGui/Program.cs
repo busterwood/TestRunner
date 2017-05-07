@@ -16,9 +16,10 @@ namespace TestGui
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //var tests = new Tests() { Runner = new TestdRunner(args) };
-            var projects = new ProjectsForm();
-            Application.Run(projects);
+            if (args.Length > 0)
+                Application.Run(new TestFixtureForm() { Runner = new TestdRunner(Environment.CurrentDirectory, args) });
+            else
+                Application.Run(new ProjectsForm());
         }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]

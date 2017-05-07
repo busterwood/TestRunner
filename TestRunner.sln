@@ -19,7 +19,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestX86", "Testx86\TestX86.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{0A4C4DC5-321E-48D4-BE3B-1279EECC9C6F}"
 	ProjectSection(SolutionItems) = preProject
+		projects.png = projects.png
 		README.md = README.md
+		tests.png = tests.png
 	EndProjectSection
 EndProject
 Global

@@ -51,14 +51,25 @@ namespace TestGui
             }
             foreach(var b in args.Builds)
             {
-                var lastChanged = b.LastChanged.ToString("u");
+                var lastChanged = b.LastChangedUtc.ToString("u").TrimEnd('Z');
                 var relPath = new StringBuilder(255);
                 Program.PathRelativePathTo(relPath, Environment.CurrentDirectory, FileAttributes.Directory, b.Folder, FileAttributes.Directory);
                 var li = new ListViewItem(new string[] { lastChanged, args.Project, relPath.ToString() });
                 li.Tag = b;
+                li.Group = GroupByAge(b.LastChangedUtc);
                 b.Built += ProjectBuilt;
                 projectsList.Items.Add(li);
             }
+        }
+
+        private ListViewGroup GroupByAge(DateTime lastChangedUtc)
+        {
+            var age = DateTime.UtcNow - lastChangedUtc;
+            if (age < TimeSpan.FromDays(4))
+                return projectsList.Groups[0];
+            if (age < TimeSpan.FromDays(4 * 7))
+                return projectsList.Groups[1];
+            return projectsList.Groups[2];
         }
 
         private void ProjectBuilt(object sender, EventArgs args)
@@ -70,7 +81,10 @@ namespace TestGui
             }
             var build = (Build)sender;
             var itemBuilt = projectsList.Items.Cast<ListViewItem>().First(li => li.Tag == build);
-            itemBuilt.Text = build.LastChanged.ToString("u");
+            itemBuilt.Text = build.LastChangedUtc.ToString("u").TrimEnd('Z');
+            var newGroup = GroupByAge(build.LastChangedUtc);
+            if (itemBuilt.Group != newGroup)
+                itemBuilt.Group = newGroup;
             projectsList.Sort();
         }
 
