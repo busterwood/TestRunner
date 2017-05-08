@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,6 +43,7 @@ namespace Test
 
         public void Run()
         {
+            SetNunitContext();
             watch.Reset();
             watch.Start();
             if (!SetUp())
@@ -51,6 +54,17 @@ namespace Test
             else
                 RunTestMethod();
             TearDown();
+        }
+
+        private void SetNunitContext()
+        {
+            var context = new Hashtable
+            {
+                { "Test.Name", testName },
+                { "Test.FullName", fixtureName + "." + testName },
+                { "WorkDirectory", Environment.CurrentDirectory }
+            };
+            CallContext.SetData("NUnit.Framework.TestContext", context);
         }
 
         private object TestTimeout()
@@ -178,4 +192,5 @@ namespace Test
             }
         }
     }
+
 }

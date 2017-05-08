@@ -9,18 +9,22 @@ namespace Test
 {
     class Program
     {
+        private const string TestDomain = "test-runner";
+
         static int Main(string[] argv)
         {
             var sw = new Stopwatch();
             sw.Start();
 
             List<string> args = argv.ToList();
-            //TODO: remove switches
             if (args.Count == 0)
             {
                 StdErr.Error("pass the assembly to test on the command line");
                 return 1;
             }
+
+            //if (AppDomain.CurrentDomain.FriendlyName != TestDomain)
+            //    return RunMainInTestDomain(argv);
 
             SetCustomConfigFile(args[0]);
 
@@ -50,6 +54,18 @@ namespace Test
             return 0;
         }
 
+        static int RunMainInTestDomain(string[] args)
+        {
+            var setup = new AppDomainSetup { ApplicationBase = Environment.CurrentDirectory, ShadowCopyFiles = "true" };
+
+            var configFilePath = Path.Combine(Directory.GetCurrentDirectory(), args[0] + ".dll.config");
+            if (File.Exists(configFilePath))
+                setup.ConfigurationFile = configFilePath;
+
+            var testDomain = AppDomain.CreateDomain(TestDomain, AppDomain.CurrentDomain.Evidence, setup);
+            return testDomain.ExecuteAssembly(Assembly.GetExecutingAssembly().Location, args);
+        }
+
         private static List<FixtureRunner> CreateFixtureRunners(List<Type> fixtureTypes)
         {
             var runners = new List<FixtureRunner>(fixtureTypes.Count);
@@ -69,7 +85,7 @@ namespace Test
 
         private static void SetCustomConfigFile(string asmName)
         {
-            var configFilePath = Path.Combine(Directory.GetCurrentDirectory(), asmName, ".dll.config");
+            var configFilePath = Path.Combine(Directory.GetCurrentDirectory(), asmName + ".dll.config");
             if (File.Exists(configFilePath))
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", configFilePath);
         }
@@ -116,7 +132,7 @@ namespace Test
             if (File.Exists(fullPath))
                 loaded = Assembly.LoadFile(fullPath);
             if (loaded == null)
-                StdErr.Info($"Failed to load assembly '{args.Name}' requested by {args.RequestingAssembly.FullName}");
+                StdErr.Info($"Failed to load assembly '{args.Name}' requested by {args.RequestingAssembly?.FullName}");
             return loaded;
         }
 

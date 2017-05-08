@@ -8,8 +8,7 @@ namespace TestGui
 {
     class ProjectFinder
     {
-        readonly string[] wellKnowBuildsFolders = new string[] 
-        {
+        readonly string[] wellKnowBuildsFolders = {
             "Debug", "Release",
             "Debug\\net46", "Release\\net46",
             "Debug\\netstandard1.6", "Release\\netstandard1.6",
@@ -27,8 +26,9 @@ namespace TestGui
 
         public Task Find()
         {
-            var projectFiles = Directory.EnumerateFiles(rootFolder, "*test*.*proj", SearchOption.AllDirectories);
-            return Task.WhenAll(projectFiles.Select(pf => Task.Factory.StartNew(FindBuilds, pf)).ToArray());
+            var projectFiles = Directory.EnumerateFiles(rootFolder, "*test*.csproj", SearchOption.AllDirectories);
+            var tasks = projectFiles.Select(pf => Task.Factory.StartNew(FindBuilds, pf));
+            return Task.WhenAll(tasks.ToArray());
         }
 
         private void FindBuilds(object testProjectFile)
