@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Up to 4 days old", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Up to 4 weeks old", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Older", System.Windows.Forms.HorizontalAlignment.Left);
@@ -37,7 +38,10 @@
             this.modifiedColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.projectColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.buildColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.refreshMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -63,6 +67,7 @@
             this.modifiedColumn,
             this.projectColumn,
             this.buildColumn});
+            this.projectsList.ContextMenuStrip = this.contextMenuStrip1;
             this.projectsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.projectsList.FullRowSelect = true;
             listViewGroup1.Header = "Up to 4 days old";
@@ -103,6 +108,20 @@
             this.buildColumn.Text = "Build";
             this.buildColumn.Width = 250;
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.refreshMenu});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(114, 26);
+            // 
+            // refreshMenu
+            // 
+            this.refreshMenu.Name = "refreshMenu";
+            this.refreshMenu.Size = new System.Drawing.Size(113, 22);
+            this.refreshMenu.Text = "Refresh";
+            this.refreshMenu.Click += new System.EventHandler(this.refreshMenu_Click);
+            // 
             // ProjectsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -115,6 +134,7 @@
             this.Load += new System.EventHandler(this.ProjectsForm_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -128,5 +148,7 @@
         private System.Windows.Forms.ColumnHeader buildColumn;
         private System.Windows.Forms.ColumnHeader modifiedColumn;
         private System.Windows.Forms.ToolStripStatusLabel statusLabel;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem refreshMenu;
     }
 }

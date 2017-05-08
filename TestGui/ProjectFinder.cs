@@ -10,10 +10,10 @@ namespace TestGui
     {
         readonly string[] wellKnowBuildsFolders = {
             "Debug", "Release",
+            "X64\\Debug", "X64\\Release",
+            "X86\\Debug", "X86\\Release",
             "Debug\\net46", "Release\\net46",
             "Debug\\netstandard1.6", "Release\\netstandard1.6",
-            "X64\\Debug", "X64\\Release",
-            "X86\\Debug", "X86\\Release"
         };
         readonly string rootFolder;
 

@@ -23,8 +23,15 @@ namespace TestGui
 
         private void ProjectsForm_Load(object sender, EventArgs e)
         {
-            projectsList.Cursor = Cursors.AppStarting;
             projectsList.SetDoubleBuffer();
+            FindProjects();
+        }
+
+        private void FindProjects()
+        {
+            projectsList.Cursor = Cursors.AppStarting;
+            statusLabel.Text = "Loading...";
+            projectsList.Items.Clear();
             projectFinder = new ProjectFinder(Environment.CurrentDirectory);
             projectFinder.ProjectFound += ProjectFinder_ProjectFound;
             Task.Run(projectFinder.Find)
@@ -103,6 +110,13 @@ namespace TestGui
             args.Add(asmName);
             var tests = new TestFixtureForm() { Runner = new TestdRunner(b.Folder, args.ToArray()) };
             tests.Show();
+        }
+
+        private void refreshMenu_Click(object sender, EventArgs e)
+        {
+            if (projectsList.Cursor != Cursors.Default)
+                return; // still running
+            FindProjects();
         }
     }
 }
