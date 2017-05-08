@@ -234,5 +234,19 @@ namespace TestGui
         {
             Runner.Stop();
         }
+
+        private void testsList_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (testsList.SelectedItems.Count == 0)
+                return;
+
+            var item = testsList.SelectedItems[0];
+            var lines = (List<string>)item.Tag;
+            if (lines.Count > 0 && splitContainer1.Panel2Collapsed)
+            {
+                splitContainer1.Panel2Collapsed = false;
+                this.Width += 400;
+            }
+        }
     }
 }
