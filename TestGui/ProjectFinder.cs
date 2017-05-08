@@ -36,17 +36,46 @@ namespace TestGui
             var args = new FoundProjectEventArgs
             {
                 Folder = Path.GetDirectoryName((string)testProjectFile),
-                Project = Path.GetFileNameWithoutExtension((string)testProjectFile),
+                Project = FindAssemblyName((string)testProjectFile),
             };
             var bin = Path.Combine(args.Folder, "bin");
             if (Directory.Exists(bin))
             {
                 args.Builds = wellKnowBuildsFolders
-                    .Select(folder => Path.Combine(bin, folder, args.Project + ".dll"))
+                    .Select(folder => Path.Combine(Path.Combine(bin, folder), args.Project + ".dll"))
                     .Where(dll => File.Exists(dll))
                     .Select(dll => new Build(Path.GetDirectoryName(dll), Path.GetFileName(dll)))
                     .ToList();
                 ProjectFound?.Invoke(this, args);
+            }
+        }
+
+        private string FindAssemblyName(string testProjectFile)
+        {
+            const string startTag = "<AssemblyName>";
+            const string endTag = "</AssemblyName>";
+            using (StreamReader r = new StreamReader(testProjectFile))
+            {
+                for(;;)
+                {
+                    var line = r.ReadLine();
+                    if (line == null)
+                        return Path.GetFileNameWithoutExtension(testProjectFile);
+                    
+                    // try to find start of assembly name
+                    int startIdx = line.IndexOf(startTag, StringComparison.Ordinal); 
+                    if (startIdx < 0)
+                        continue;
+                    startIdx += startTag.Length;
+
+                    // try to find end of assembly name
+                    int endIdx = line.IndexOf(endTag, startIdx, StringComparison.Ordinal); 
+                    if (endIdx < 0)
+                        continue;
+
+                    var asmName = line.Substring(startIdx, endIdx - startIdx);
+                    return asmName;
+                }
             }
         }
 
@@ -84,7 +113,7 @@ namespace TestGui
             Folder = folder;
             var path = Path.Combine(folder, asmName);
             LastChangedUtc = File.GetLastWriteTimeUtc(path);
-            var watcher = new FileSystemWatcher(folder, asmName);
+            watcher = new FileSystemWatcher(folder, asmName);
             watcher.Changed += (sender, args) => LastChangedUtc = File.GetLastWriteTimeUtc(path);
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.EnableRaisingEvents = true;

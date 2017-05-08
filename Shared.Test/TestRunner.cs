@@ -43,6 +43,7 @@ namespace Test
 
         public void Run()
         {
+            StdOut.Start($"{fixtureName}.{testName} ");
             SetNunitContext();
             watch.Reset();
             watch.Start();

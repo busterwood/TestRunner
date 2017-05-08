@@ -13,11 +13,16 @@ namespace Test
             ExeName = Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs().First());
         }
 
+        internal static void Start(string line)
+        {
+            Console.Out.WriteLine($"START: {line}");
+        }
+
         public static void Passed(string line)
         {
             var before = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Error.WriteLine($"PASS: {line}");
+            Console.Out.WriteLine($"PASS: {line}");
             Console.ForegroundColor = before;
         }
 
@@ -25,7 +30,7 @@ namespace Test
         {
             var before = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine($"FAIL: {line}");
+            Console.Out.WriteLine($"FAIL: {line}");
             Console.ForegroundColor = before;
         }
 
@@ -33,8 +38,9 @@ namespace Test
         {
             var before = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Error.WriteLine($"IGNORED: {line}");
+            Console.Out.WriteLine($"IGNORED: {line}");
             Console.ForegroundColor = before;
         }
+
     }
 }

@@ -16,6 +16,7 @@ namespace TestGui
 
         public string AsmName { get; }
         public event EventHandler<RunStartedEventArgs> RunStarted;
+        public event EventHandler<TestEventArgs> TestStarted;
         public event EventHandler<TestEventArgs> Tested;
         public event EventHandler<RunFinishedEventArgs> RunFinished;
         public event EventHandler<string> Info;
@@ -76,17 +77,26 @@ namespace TestGui
                     var @class = Classify(line);
                     switch (@class)
                     {
+                        case LineClass.Start:
+                            {
+                                var args = Parse(line, @class);
+                                args.Output = new List<string>();
+                                TestStarted?.Invoke(this, args);
+                                lines = new List<string>();
+                                break;
+                            }
                         case LineClass.Output:
                             lines.Add(line);
                             break;
                         case LineClass.Pass:
                         case LineClass.Ignored:
                         case LineClass.Fail:
-                            var args = Parse(line, @class);
-                            args.Output = lines;
-                            Tested?.Invoke(this, args);
-                            lines = new List<string>();
-                            break;
+                            {
+                                var args = Parse(line, @class);
+                                args.Output = lines;
+                                Tested?.Invoke(this, args);
+                                break;
+                            }
                         case LineClass.Info:
                             if (line.Contains("Starting new test run of '"))
                             {
@@ -128,6 +138,8 @@ namespace TestGui
             var bits = line.Split(':');
             if (bits.Length < 2)
                 return LineClass.Output;
+            if (bits[0] == "START")
+                return LineClass.Start;
             if (bits[0] == "PASS")
                 return LineClass.Pass;
             if (bits[0] == "FAIL")
@@ -142,7 +154,8 @@ namespace TestGui
         }        
 
         enum LineClass
-        {
+        {            
+            Start = 0,
             Pass = 1,
             Fail = 2,
             Ignored = 3,
@@ -166,7 +179,6 @@ namespace TestGui
             {
                 result.FullTestName = bits[1];
             }
-
             return result;
         }
 

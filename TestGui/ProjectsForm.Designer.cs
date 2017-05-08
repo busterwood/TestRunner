@@ -46,14 +46,14 @@
             this.statusLabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 347);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(530, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(543, 22);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // statusLabel
             // 
             this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(515, 17);
+            this.statusLabel.Size = new System.Drawing.Size(528, 17);
             this.statusLabel.Spring = true;
             this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -78,7 +78,7 @@
             this.projectsList.Location = new System.Drawing.Point(0, 0);
             this.projectsList.MultiSelect = false;
             this.projectsList.Name = "projectsList";
-            this.projectsList.Size = new System.Drawing.Size(530, 347);
+            this.projectsList.Size = new System.Drawing.Size(543, 347);
             this.projectsList.Sorting = System.Windows.Forms.SortOrder.Descending;
             this.projectsList.TabIndex = 1;
             this.projectsList.UseCompatibleStateImageBehavior = false;
@@ -95,7 +95,7 @@
             // 
             this.projectColumn.DisplayIndex = 0;
             this.projectColumn.Text = "Project";
-            this.projectColumn.Width = 120;
+            this.projectColumn.Width = 155;
             // 
             // buildColumn
             // 
@@ -107,7 +107,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(530, 369);
+            this.ClientSize = new System.Drawing.Size(543, 369);
             this.Controls.Add(this.projectsList);
             this.Controls.Add(this.statusStrip1);
             this.Name = "ProjectsForm";
