@@ -113,7 +113,7 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.refreshMenu});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 48);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(133, 26);
             // 
             // refreshMenu
             // 
@@ -130,11 +130,9 @@
             this.ClientSize = new System.Drawing.Size(543, 369);
             this.Controls.Add(this.projectsList);
             this.Controls.Add(this.statusStrip1);
-            this.KeyPreview = true;
             this.Name = "ProjectsForm";
             this.Text = "Test Projects";
             this.Load += new System.EventHandler(this.ProjectsForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ProjectsForm_KeyDown);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);

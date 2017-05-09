@@ -8,74 +8,117 @@ namespace TestGui
 {
     class ProjectFinder
     {
-        readonly string[] wellKnowBuildsFolders = {
-            "Debug", "Release",
-            "X64\\Debug", "X64\\Release",
-            "X86\\Debug", "X86\\Release",
-            "Debug\\net46", "Release\\net46",
-            "Debug\\netstandard1.6", "Release\\netstandard1.6",
-        };
-        readonly string rootFolder;
-
-        public ProjectFinder(string rootFolder)
+        public async Task Find(string folder)
         {
-            if (string.IsNullOrWhiteSpace(rootFolder))
-                throw new ArgumentNullException(nameof(rootFolder));
-            this.rootFolder = rootFolder;
-        }
+            await Task.Yield();
+            if (Path.GetDirectoryName(folder).Equals(".git", StringComparison.Ordinal))
+                return;
 
-        public Task Find()
-        {
-            var projectFiles = Directory.EnumerateFiles(rootFolder, "*test*.csproj", SearchOption.AllDirectories);
-            var tasks = projectFiles.Select(pf => Task.Factory.StartNew(FindBuilds, pf));
-            return Task.WhenAll(tasks.ToArray());
-        }
-
-        private void FindBuilds(object testProjectFile)
-        {
-            var args = new FoundProjectEventArgs
+            var projectFiles = Directory.GetFiles(folder, "*test*.csproj");
+            if (projectFiles.Any())
             {
-                Folder = Path.GetDirectoryName((string)testProjectFile),
-                Project = FindAssemblyName((string)testProjectFile),
-            };
-            var bin = Path.Combine(args.Folder, "bin");
-            if (Directory.Exists(bin))
+                await Task.WhenAll(projectFiles.Select(pf => FindBuilds(pf)).ToArray());
+            }
+            else
             {
-                args.Builds = wellKnowBuildsFolders
-                    .Select(folder => Path.Combine(Path.Combine(bin, folder), args.Project + ".dll"))
-                    .Where(dll => File.Exists(dll))
-                    .Select(dll => new Build(Path.GetDirectoryName(dll), Path.GetFileName(dll)))
-                    .ToList();
-                ProjectFound?.Invoke(this, args);
+                var subDirs = Directory.EnumerateDirectories(folder);
+                await Task.WhenAll(subDirs.Select(Find).ToArray());
             }
         }
 
-        private string FindAssemblyName(string testProjectFile)
+        private async Task FindBuilds(object testProjectFile)
         {
-            const string startTag = "<AssemblyName>";
-            const string endTag = "</AssemblyName>";
+            var pf = await LoadProjectFile((string)testProjectFile);
+            var args = new FoundProjectEventArgs
+            {
+                Folder = Path.GetDirectoryName((string)testProjectFile),
+                Project = pf.AssemblyName,
+            };
+            args.Builds = pf.OutputPaths
+                .Select(outputPath => Path.Combine(args.Folder, outputPath, pf.AssemblyName + ".dll"))
+                .Where(dll => File.Exists(dll))
+                .Select(dll => new Build(Path.GetDirectoryName(dll), Path.GetFileName(dll)))
+                .ToList();
+            if (args.Builds.Count > 0)
+                ProjectFound?.Invoke(this, args);
+        }
+
+        private async Task<ProjectFile> LoadProjectFile(string testProjectFile)
+        {
+            string asmName = null;
+            var outputs = new List<string>();
             using (StreamReader r = new StreamReader(testProjectFile))
             {
                 for(;;)
                 {
-                    var line = r.ReadLine();
-                    if (line == null)
-                        return Path.GetFileNameWithoutExtension(testProjectFile);
+                    var line = await r.ReadLineAsync();
+
+                    // stop at EOF or first item group
+                    if (line == null || IsItemGroup(line))
+                        return new ProjectFile(asmName, outputs);
                     
-                    // try to find start of assembly name
-                    int startIdx = line.IndexOf(startTag, StringComparison.Ordinal); 
-                    if (startIdx < 0)
-                        continue;
-                    startIdx += startTag.Length;
+                    if (asmName == null)
+                        asmName = ParseAssemblyName(line);
 
-                    // try to find end of assembly name
-                    int endIdx = line.IndexOf(endTag, startIdx, StringComparison.Ordinal); 
-                    if (endIdx < 0)
-                        continue;
-
-                    var asmName = line.Substring(startIdx, endIdx - startIdx);
-                    return asmName;
+                    var temp = ParseOutputPath(line);
+                    if (temp != null)
+                        outputs.Add(temp);
                 }
+            }
+        }
+
+        private static bool IsItemGroup(string line)
+        {
+            return line.IndexOf("<ItemGroup>", StringComparison.Ordinal) >= 0;
+        }
+
+        static string ParseAssemblyName(string line)
+        {
+            const string startTag = "<AssemblyName>";
+            const string endTag = "</AssemblyName>";
+
+            // try to find start of assembly name
+            int startIdx = line.IndexOf(startTag, StringComparison.Ordinal);
+            if (startIdx < 0)
+                return null;
+            startIdx += startTag.Length;
+
+            // try to find end of assembly name
+            int endIdx = line.IndexOf(endTag, startIdx, StringComparison.Ordinal);
+            if (endIdx < 0)
+                return null;
+
+            return line.Substring(startIdx, endIdx - startIdx);
+        }
+
+        static string ParseOutputPath(string line)
+        {
+            const string startTag = "<OutputPath>";
+            const string endTag = "</OutputPath>";
+            
+            // try to find start of assembly name
+            int startIdx = line.IndexOf(startTag, StringComparison.Ordinal);
+            if (startIdx < 0)
+                return null;
+            startIdx += startTag.Length;
+
+            // try to find end of assembly name
+            int endIdx = line.IndexOf(endTag, startIdx, StringComparison.Ordinal);
+            if (endIdx < 0)
+                return null;
+
+            return line.Substring(startIdx, endIdx - startIdx);
+        }
+
+        struct ProjectFile
+        {
+            public string AssemblyName { get; }
+            public List<string> OutputPaths { get; }
+
+            public ProjectFile(string assemblyName, List<string> outputPaths)
+            {
+                this.AssemblyName = assemblyName;
+                this.OutputPaths = outputPaths;
             }
         }
 

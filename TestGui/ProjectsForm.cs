@@ -32,17 +32,17 @@ namespace TestGui
             projectsList.Cursor = Cursors.AppStarting;
             statusLabel.Text = "Loading...";
             projectsList.Items.Clear();
-            projectFinder = new ProjectFinder(Environment.CurrentDirectory);
+            projectFinder = new ProjectFinder();
             projectFinder.ProjectFound += ProjectFinder_ProjectFound;
-            Task.Run(projectFinder.Find)
-                .ContinueWith(ResetCursor);
+            Task.Run(() => projectFinder.Find(Environment.CurrentDirectory))
+                .ContinueWith(FindProjectsFinished);
         }
 
-        private void ResetCursor(Task obj)
+        private void FindProjectsFinished(Task obj)
         {
             if (InvokeRequired)
             {
-                BeginInvoke((Action<Task>)ResetCursor, obj);
+                BeginInvoke((Action<Task>)FindProjectsFinished, obj);
                 return;
             }
             projectsList.Cursor = Cursors.Default;
@@ -89,10 +89,8 @@ namespace TestGui
             var build = (Build)sender;
             var itemBuilt = projectsList.Items.Cast<ListViewItem>().First(li => li.Tag == build);
             itemBuilt.Text = build.LastChangedUtc.ToString("u").TrimEnd('Z');
-            var newGroup = GroupByAge(build.LastChangedUtc);
-            if (itemBuilt.Group != newGroup)
-                itemBuilt.Group = newGroup;
-            projectsList.Sort();
+            itemBuilt.Group = GroupByAge(build.LastChangedUtc);
+            projectsList.Sort(); // modification time will have changed, force re-sorting
         }
 
         private void projectsList_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -100,6 +98,11 @@ namespace TestGui
             if (projectsList.SelectedItems.Count == 0)
                 return;
             var selected = projectsList.SelectedItems[0];
+            StartTesting(selected);
+        }
+
+        private static void StartTesting(ListViewItem selected)
+        {
             Build b = (Build)selected.Tag;
             var args = new List<string>();
             if (b.Folder.IndexOf("x64", StringComparison.OrdinalIgnoreCase) > 0)
@@ -124,10 +127,5 @@ namespace TestGui
             FindProjects();
         }
 
-        private void ProjectsForm_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.F5 && e.Modifiers == Keys.None)
-                RefreshProjectsList();
-        }
     }
 }
