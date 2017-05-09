@@ -28,6 +28,7 @@ namespace TestGui
 
         private async Task FindBuilds(object testProjectFile)
         {
+            await Task.Yield();
             var pf = await LoadProjectFile((string)testProjectFile);
             var args = new FoundProjectEventArgs
             {
