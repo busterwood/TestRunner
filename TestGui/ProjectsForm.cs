@@ -114,9 +114,20 @@ namespace TestGui
 
         private void refreshMenu_Click(object sender, EventArgs e)
         {
+            RefreshProjectsList();
+        }
+
+        private void RefreshProjectsList()
+        {
             if (projectsList.Cursor != Cursors.Default)
                 return; // still running
             FindProjects();
+        }
+
+        private void ProjectsForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F5 && e.Modifiers == Keys.None)
+                RefreshProjectsList();
         }
     }
 }
