@@ -44,6 +44,7 @@ namespace Test
         public void Run()
         {
             StdOut.Start($"{fixtureName}.{testName} ");
+            ChangeTypeOfArguments();
             SetNunitContext();
             watch.Reset();
             watch.Start();
@@ -107,6 +108,21 @@ namespace Test
             catch (Exception ex)
             {
                 Fail(ex);
+            }
+        }
+
+        private void ChangeTypeOfArguments()
+        {
+            if (args != null)
+            {
+                int i = 0;
+                foreach (var p in test.GetParameters())
+                {
+                    var arg = args[i];
+                    if (arg != null && p.ParameterType != arg.GetType() && !p.ParameterType.IsEnum)
+                        args[i] = Convert.ChangeType(arg, p.ParameterType);
+                    i++;
+                }
             }
         }
 
