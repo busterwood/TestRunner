@@ -6,6 +6,11 @@ namespace Test
 {
     static class TypeExtensions
     {
+        public static bool IsSetUpFixture(this Type type)
+        {
+            return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "SetUpFixtureAttribute", StringComparison.Ordinal));
+        }
+
         public static bool IsTestFixture(this Type type)
         {
             return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestFixtureAttribute", StringComparison.Ordinal));

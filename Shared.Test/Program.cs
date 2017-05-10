@@ -23,9 +23,6 @@ namespace Test
                 return 1;
             }
 
-            //if (AppDomain.CurrentDomain.FriendlyName != TestDomain)
-            //    return RunMainInTestDomain(argv);
-
             SetCustomConfigFile(args[0]);
 
             var asm = LoadTestAssembly(args[0]);
@@ -40,6 +37,11 @@ namespace Test
 
             StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures");
 
+            var setupFixture = CreateSetUpFixtureRunner(asm);
+            setupFixture?.SetUp();
+            if (setupFixture.Failed)
+                return 4;
+
             Stats totals = Stats.Zero;    
             foreach (var fixture in fixtures)
             {
@@ -47,11 +49,23 @@ namespace Test
             }
             sw.Stop();
 
+            setupFixture?.TearDown();
+            if (setupFixture.Failed)
+                return 5;
+
             StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, {totals.Ignored} ignored, in {sw.Elapsed.TotalSeconds:N1} seconds");
 
             if (Debugger.IsAttached)
                 Debugger.Break();
             return 0;
+        }
+
+        private static SetUpFixtureRunner CreateSetUpFixtureRunner(Assembly testAsm)
+        {
+            var setupFixture = testAsm.GetExportedTypes()
+                    .Where(t => !t.IsAbstract && t.IsSetUpFixture())
+                    .FirstOrDefault();
+            return setupFixture == null ? null : new SetUpFixtureRunner(setupFixture);
         }
 
         static int RunMainInTestDomain(string[] args)
