@@ -65,5 +65,21 @@ namespace Test
         {
             return string.Equals(attr.AttributeType.Name, "TestCaseAttribute", StringComparison.Ordinal);
         }
+
+        public static string Category(this Type type)
+        {
+            return type.GetCustomAttributesData()
+                .FirstOrDefault(a => string.Equals(a.AttributeType.Name, "CategoryAttribute", StringComparison.Ordinal))
+                ?.ConstructorArguments
+                ?.FirstOrDefault().Value?.ToString();
+        }
+
+        public static string Category(this MethodInfo method)
+        {
+            return method.GetCustomAttributesData()
+                .FirstOrDefault(a => string.Equals(a.AttributeType.Name, "CategoryAttribute", StringComparison.Ordinal))
+                ?.ConstructorArguments
+                ?.FirstOrDefault().Value?.ToString();
+        }
     }
 }

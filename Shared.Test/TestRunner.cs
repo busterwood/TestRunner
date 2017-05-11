@@ -17,12 +17,12 @@ namespace Test
         readonly MethodInfo setup;
         readonly MethodInfo tearDown;
         readonly MethodInfo test;
-        readonly object fixtureTimeoutMs;
         readonly Stopwatch watch;
         readonly object[] args;
+        readonly string category;
         int testFinished;
 
-        public TestRunner(string fixtureName, string testName, object obj, MethodInfo setup, MethodInfo tearDown, MethodInfo test, object fixtureTimeoutMs, Stopwatch watch, object[] args)
+        public TestRunner(string fixtureName, string testName, object obj, MethodInfo setup, MethodInfo tearDown, MethodInfo test, Stopwatch watch, object[] args)
         {
             this.fixtureName = fixtureName;
             this.testName = testName;
@@ -30,9 +30,9 @@ namespace Test
             this.setup = setup;
             this.tearDown = tearDown;
             this.test = test;
-            this.fixtureTimeoutMs = fixtureTimeoutMs;
             this.watch = watch;
             this.args = args;
+            this.category = test.Category() ?? test.DeclaringType.Category();
         }
 
         public bool Ignored => test.IsIgnored();
@@ -42,15 +42,15 @@ namespace Test
         public bool Failed { get; private set; }
 
         public void Run()
-        {
-            StdOut.Start($"{fixtureName}.{testName} ");
+        {            
+            StdOut.Start($"{fixtureName}.{testName}{(category != null ? ": " : "")}{category}");
             ChangeTypeOfArguments();
             SetNunitContext();
             watch.Reset();
             watch.Start();
             if (!SetUp())
                 return;
-            object timeout = TestTimeout() ?? fixtureTimeoutMs;
+            object timeout = TestTimeout() ?? FixtureTimeout();
             if (timeout != null)
                 RunTestWithTimeout(args, timeout);
             else
@@ -72,6 +72,11 @@ namespace Test
         private object TestTimeout()
         {
             return test.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
+        }
+
+        private object FixtureTimeout()
+        {
+            return test.DeclaringType.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
         }
 
         private void RunTestWithTimeout(object[] args, object timeoutMs)

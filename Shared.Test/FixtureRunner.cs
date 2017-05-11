@@ -111,14 +111,14 @@ namespace Test
 
         TestRunner CreateTest(MethodInfo testMethod)
         {
-            return new TestRunner(fixture.Name, testMethod.Name, obj, setup, tearDown, testMethod, fixtureTimeoutMs, watch, null);
+            return new TestRunner(fixture.Name, testMethod.Name, obj, setup, tearDown, testMethod, watch, null);
         }
 
         TestRunner CreateTestCase(MethodInfo testMethod, CustomAttributeData testCase)
         {
             var args = TestCaseArgs(testCase);
             var testName = TestCaseName(testMethod, args);
-            return new TestRunner(fixture.Name, testName, obj, setup, tearDown, testMethod, fixtureTimeoutMs, watch, args);
+            return new TestRunner(fixture.Name, testName, obj, setup, tearDown, testMethod, watch, args);
         }
 
         static object[] TestCaseArgs(CustomAttributeData testCase)

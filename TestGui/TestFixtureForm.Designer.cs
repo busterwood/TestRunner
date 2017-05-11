@@ -29,17 +29,18 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Failed", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Passed", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup8 = new System.Windows.Forms.ListViewGroup("Ignored", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup9 = new System.Windows.Forms.ListViewGroup("Slow Tests", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Failed", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Passed", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Ignored", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Slow Tests", System.Windows.Forms.HorizontalAlignment.Left);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestFixtureForm));
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Filters", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("All");
-            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("Passed", 0);
-            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("Failed", 1);
-            System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem("Ignored", 3);
-            System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("Slow", 2);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Filters", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("All");
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Passed", 0);
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Failed", 1);
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Ignored", 3);
+            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("Slow", 2);
+            System.Windows.Forms.ColumnHeader categoryColumn;
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.testsList = new System.Windows.Forms.ListView();
             this.TestHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -58,6 +59,7 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.statusText = new System.Windows.Forms.ToolStripStatusLabel();
+            categoryColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -86,7 +88,7 @@
             this.splitContainer1.Panel2.Controls.Add(this.outputText);
             this.splitContainer1.Panel2Collapsed = true;
             this.splitContainer1.Size = new System.Drawing.Size(666, 625);
-            this.splitContainer1.SplitterDistance = 647;
+            this.splitContainer1.SplitterDistance = 641;
             this.splitContainer1.TabIndex = 0;
             // 
             // testsList
@@ -95,24 +97,25 @@
             this.TestHeader,
             this.fixtureColumn,
             this.TimeHeader,
-            this.outputColumn});
+            this.outputColumn,
+            categoryColumn});
             this.testsList.ContextMenuStrip = this.contextMenu;
             this.testsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.testsList.Font = new System.Drawing.Font("Trebuchet MS", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.testsList.FullRowSelect = true;
-            listViewGroup6.Header = "Failed";
-            listViewGroup6.Name = "failedGroup";
-            listViewGroup7.Header = "Passed";
-            listViewGroup7.Name = "passedGroup";
-            listViewGroup8.Header = "Ignored";
-            listViewGroup8.Name = "ignoredGroup";
-            listViewGroup9.Header = "Slow Tests";
-            listViewGroup9.Name = "slowGroup";
+            listViewGroup1.Header = "Failed";
+            listViewGroup1.Name = "failedGroup";
+            listViewGroup2.Header = "Passed";
+            listViewGroup2.Name = "passedGroup";
+            listViewGroup3.Header = "Ignored";
+            listViewGroup3.Name = "ignoredGroup";
+            listViewGroup4.Header = "Slow Tests";
+            listViewGroup4.Name = "slowGroup";
             this.testsList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup6,
-            listViewGroup7,
-            listViewGroup8,
-            listViewGroup9});
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3,
+            listViewGroup4});
             this.testsList.HideSelection = false;
             this.testsList.LargeImageList = this.testIcons32;
             this.testsList.Location = new System.Drawing.Point(120, 0);
@@ -207,28 +210,28 @@
             this.categoriesList.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.categoriesList.Dock = System.Windows.Forms.DockStyle.Left;
             this.categoriesList.FullRowSelect = true;
-            listViewGroup1.Header = "Filters";
-            listViewGroup1.Name = "listViewGroup1";
-            listViewGroup1.Tag = "Filters";
+            listViewGroup5.Header = "Filters";
+            listViewGroup5.Name = "listViewGroup1";
+            listViewGroup5.Tag = "Filters";
             this.categoriesList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1});
+            listViewGroup5});
             this.categoriesList.HideSelection = false;
-            listViewItem6.Group = listViewGroup1;
-            listViewItem6.Tag = "all";
-            listViewItem7.Group = listViewGroup1;
-            listViewItem7.Tag = "passedGroup";
-            listViewItem8.Group = listViewGroup1;
-            listViewItem8.Tag = "failedGroup";
-            listViewItem9.Group = listViewGroup1;
-            listViewItem9.Tag = "ignoredGroup";
-            listViewItem10.Group = listViewGroup1;
-            listViewItem10.Tag = "slowGroup";
+            listViewItem1.Group = listViewGroup5;
+            listViewItem1.Tag = "all";
+            listViewItem2.Group = listViewGroup5;
+            listViewItem2.Tag = "passedGroup";
+            listViewItem3.Group = listViewGroup5;
+            listViewItem3.Tag = "failedGroup";
+            listViewItem4.Group = listViewGroup5;
+            listViewItem4.Tag = "ignoredGroup";
+            listViewItem5.Group = listViewGroup5;
+            listViewItem5.Tag = "slowGroup";
             this.categoriesList.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem6,
-            listViewItem7,
-            listViewItem8,
-            listViewItem9,
-            listViewItem10});
+            listViewItem1,
+            listViewItem2,
+            listViewItem3,
+            listViewItem4,
+            listViewItem5});
             this.categoriesList.Location = new System.Drawing.Point(0, 0);
             this.categoriesList.Margin = new System.Windows.Forms.Padding(4);
             this.categoriesList.Name = "categoriesList";
@@ -246,7 +249,7 @@
             this.outputText.Location = new System.Drawing.Point(0, 0);
             this.outputText.Name = "outputText";
             this.outputText.ReadOnly = true;
-            this.outputText.Size = new System.Drawing.Size(737, 674);
+            this.outputText.Size = new System.Drawing.Size(96, 100);
             this.outputText.TabIndex = 0;
             this.outputText.Text = "";
             // 
@@ -272,6 +275,10 @@
             this.statusText.Size = new System.Drawing.Size(529, 17);
             this.statusText.Spring = true;
             this.statusText.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // categoryColumn
+            // 
+            categoryColumn.Text = "Category";
             // 
             // TestFixtureForm
             // 

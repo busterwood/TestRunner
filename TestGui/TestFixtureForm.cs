@@ -50,12 +50,22 @@ namespace TestGui
 
             Runner.RunStarted += RunStarted;
             Runner.RunFinished += RunFinished;
+            Runner.TestStarted += TestStarted;
             Runner.Tested += Tested;
             Runner.Start();
 
             statusText.Text = "Monitoring " + Runner.Folder;
         }
 
+        private void TestStarted(object sender, TestEventArgs e)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke((EventHandler<TestEventArgs>)TestStarted, sender, e);
+                return;
+            }
+            statusText.Text = $"Running {e.TestFixure}.{e.TestName}...";
+        }
 
         private void RunStarted(object sender, RunStartedEventArgs e)
         {
@@ -133,13 +143,9 @@ namespace TestGui
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            if (e.Elapsed.HasValue)
-                li.SubItems.Add(e.Elapsed.Value.TotalMilliseconds.ToString("N0"));
-            else
-                li.SubItems.Add("");
-
-            if (e.Output.Count > 0)
-                li.SubItems.Add("Yes");
+            li.SubItems.Add(e.Elapsed.HasValue ? e.Elapsed.Value.TotalMilliseconds.ToString("N0") : "");
+            li.SubItems.Add(e.Output.Count > 0 ? "Yes" : "");
+            li.SubItems.Add(e.Category ?? "");
             li.Tag = e.Output;
             testsList.Items.Add(li);
         }

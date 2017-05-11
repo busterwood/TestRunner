@@ -67,6 +67,7 @@ namespace TestGui
 
         void ParseAutoputAsync(TextReader input)
         {
+            string testCategory = null;
             for (;;)
             {
                 var line = input.ReadLine();
@@ -79,10 +80,11 @@ namespace TestGui
                     {
                         case LineClass.Start:
                             {
-                                var args = Parse(line, @class);
-                                args.Output = new List<string>();
-                                TestStarted?.Invoke(this, args);
+                                var evtArgs = Parse(line, @class);
+                                evtArgs.Output = new List<string>();
+                                TestStarted?.Invoke(this, evtArgs);
                                 lines = new List<string>();
+                                testCategory = evtArgs.Category;
                                 break;
                             }
                         case LineClass.Output:
@@ -92,9 +94,10 @@ namespace TestGui
                         case LineClass.Ignored:
                         case LineClass.Fail:
                             {
-                                var args = Parse(line, @class);
-                                args.Output = lines;
-                                Tested?.Invoke(this, args);
+                                var evtArgs = Parse(line, @class);                                
+                                evtArgs.Output = lines;
+                                evtArgs.Category = testCategory;
+                                Tested?.Invoke(this, evtArgs);
                                 break;
                             }
                         case LineClass.Info:
@@ -111,7 +114,7 @@ namespace TestGui
                                 var stats = ParseTotals(previousInfo);
                                 RunFinished?.Invoke(this, stats);
                             }
-                            else
+                            else if (!line.StartsWith("Testd: INFO: Monitoring '", StringComparison.Ordinal))
                                 previousInfo = line;
                             break;
                         case LineClass.Error:
@@ -167,24 +170,27 @@ namespace TestGui
         TestEventArgs Parse(string line, LineClass @class)
         {
             var result = new TestEventArgs();
-            var bits = line.Split(new string[] { ": " }, StringSplitOptions.None);
             result.Result = (TestResult)@class;
-            if (@class == LineClass.Pass || @class ==  LineClass.Fail)
+            var bits = line.Split(new string[] { ": " }, StringSplitOptions.None);
+            if (@class == LineClass.Pass || @class == LineClass.Fail)
             {
                 bits = bits[1].Split(new string[] { " in " }, StringSplitOptions.None); // TestFixture.TestName in 10 MS
                 result.FullTestName = bits[0];
                 result.Elapsed = TimeSpan.FromMilliseconds(int.Parse(bits[1].Split(' ')[0]));
             }
-            else
+            else 
             {
                 result.FullTestName = bits[1];
+                if (bits.Length > 2)
+                    result.Category = bits[2];
             }
             return result;
         }
 
-
         private RunFinishedEventArgs ParseTotals(string line)
         {
+            if (line == null)
+                return new RunFinishedEventArgs();
             var infototals = line.Split(':');
             var totals = infototals.Last();
             var bits = totals.Split(new string[] { ", " }, StringSplitOptions.None);
@@ -226,6 +232,7 @@ namespace TestGui
             }
         }
         public string FullTestName { get; set; }
+        public string Category { get; set; }
         public TestResult Result { get; set; }
         public List<string> Output { get; set; }
         public TimeSpan? Elapsed { get; set; }
