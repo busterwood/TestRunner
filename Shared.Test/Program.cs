@@ -38,9 +38,12 @@ namespace Test
             StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures");
 
             var setupFixture = CreateSetUpFixtureRunner(asm);
-            setupFixture?.SetUp();
-            if (setupFixture.Failed)
-                return 4;
+            if (setupFixture != null)
+            {
+                setupFixture.SetUp();
+                if (setupFixture.Failed)
+                    return 4;
+            }
 
             Stats totals = Stats.Zero;    
             foreach (var fixture in fixtures)
@@ -49,9 +52,9 @@ namespace Test
             }
             sw.Stop();
 
-            setupFixture?.TearDown();
-            if (setupFixture.Failed)
-                return 5;
+            //setupFixture.TearDown();
+            //if (setupFixture.Failed)
+            //    return 5;
 
             StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, {totals.Ignored} ignored, in {sw.Elapsed.TotalSeconds:N1} seconds");
 

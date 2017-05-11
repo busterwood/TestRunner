@@ -224,6 +224,8 @@ namespace Test
 
         public SetUpFixtureRunner(Type setupFixture)
         {
+            if (setupFixture == null)
+                throw new ArgumentNullException(nameof(setupFixture));
             this.setupFixture = setupFixture;
             var methods = setupFixture.GetMethods();
             this.setup = methods.FirstOrDefault(m => m.IsSetup());
@@ -242,6 +244,7 @@ namespace Test
 
         public bool SetUp()
         {
+            StdErr.Info($"Running setup fixture: {setupFixture}");
             try
             {
                 setup?.Invoke(obj, null);
