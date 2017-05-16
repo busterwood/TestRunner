@@ -20,18 +20,18 @@ namespace Test
             if (args.Count == 0)
             {
                 StdErr.Error("pass the assembly to test on the command line");
-                return 1;
+                return Exit(1);
             }
 
             SetCustomConfigFile(args[0]);
 
             var asm = LoadTestAssembly(args[0]);
             if (asm == null)
-                return 2;
+                return Exit(2);
 
             List<Type> fixtureTypes = FindFixutres(asm);
             if (fixtureTypes == null)
-                return 3;
+                return Exit(3);
 
             List<FixtureRunner> fixtures = CreateFixtureRunners(fixtureTypes);
 
@@ -42,10 +42,10 @@ namespace Test
             {
                 setupFixture.SetUp();
                 if (setupFixture.Failed)
-                    return 4;
+                    return Exit(4);
             }
 
-            Stats totals = Stats.Zero;    
+            Stats totals = Stats.Zero;
             foreach (var fixture in fixtures)
             {
                 totals += RunFixture(fixture);
@@ -60,7 +60,14 @@ namespace Test
 
             if (Debugger.IsAttached)
                 Debugger.Break();
-            return 0;
+
+            return Exit(0);
+        }
+
+        private static int Exit(int code)
+        {
+            Environment.Exit(code); // force exit, even if there are still running threads
+            return code;
         }
 
         private static SetUpFixtureRunner CreateSetUpFixtureRunner(Assembly testAsm)

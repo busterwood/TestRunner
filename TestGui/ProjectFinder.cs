@@ -167,5 +167,8 @@ namespace TestGui
         {
             watcher.Dispose();
         }
+
+        public bool X64 => Folder.IndexOf("x64", StringComparison.OrdinalIgnoreCase) > 0;
+        public bool X86 => Folder.IndexOf("x86", StringComparison.OrdinalIgnoreCase) > 0;
     }
 }

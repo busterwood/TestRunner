@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -105,9 +107,9 @@ namespace TestGui
         {
             Build b = (Build)selected.Tag;
             var args = new List<string>();
-            if (b.Folder.IndexOf("x64", StringComparison.OrdinalIgnoreCase) > 0)
+            if (b.X64)
                 args.Add("--x64");
-            else if (b.Folder.IndexOf("x86", StringComparison.OrdinalIgnoreCase) > 0)
+            else if (b.X86)
                 args.Add("--x86");
             var asmName = selected.SubItems[1].Text;
             args.Add(asmName);
@@ -127,5 +129,35 @@ namespace TestGui
             FindProjects();
         }
 
+        private void runConsoleMenu_Click(object sender, EventArgs e)
+        {
+            if (projectsList.SelectedItems.Count == 0)
+                return;
+            var selected = projectsList.SelectedItems[0];
+            RunConsole(selected);
+        }
+
+        private void RunConsole(ListViewItem selected)
+        {
+            Build b = (Build)selected.Tag;
+            var args = new List<string>();
+            string testExe = "Testd.exe";
+            if (b.X64)
+                args.Add("--x64");
+            else if (b.X86)
+                args.Add("--x86");
+            var asmName = selected.SubItems[1].Text;
+            args.Add(asmName);
+
+            var asm = Assembly.GetExecutingAssembly();
+            var location = Path.GetDirectoryName(asm.Location);
+            var si = new ProcessStartInfo
+            {
+                FileName = Path.Combine(location, testExe),
+                Arguments = string.Join(" ", args),
+                WorkingDirectory = b.Folder,
+            };
+            Process.Start(si);
+        }
     }
 }
