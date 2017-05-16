@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.ColumnHeader categoryColumn;
             System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Failed", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Passed", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Ignored", System.Windows.Forms.HorizontalAlignment.Left);
@@ -40,7 +41,6 @@
             System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Failed", 1);
             System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Ignored", 3);
             System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("Slow", 2);
-            System.Windows.Forms.ColumnHeader categoryColumn;
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.testsList = new System.Windows.Forms.ListView();
             this.TestHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -67,6 +67,10 @@
             this.contextMenu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // categoryColumn
+            // 
+            categoryColumn.Text = "Category";
             // 
             // splitContainer1
             // 
@@ -246,6 +250,7 @@
             // 
             this.outputText.BackColor = System.Drawing.SystemColors.Window;
             this.outputText.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.outputText.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.outputText.Location = new System.Drawing.Point(0, 0);
             this.outputText.Name = "outputText";
             this.outputText.ReadOnly = true;
@@ -275,10 +280,6 @@
             this.statusText.Size = new System.Drawing.Size(529, 17);
             this.statusText.Spring = true;
             this.statusText.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // categoryColumn
-            // 
-            categoryColumn.Text = "Category";
             // 
             // TestFixtureForm
             // 

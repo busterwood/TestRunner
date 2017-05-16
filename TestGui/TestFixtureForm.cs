@@ -251,7 +251,7 @@ namespace TestGui
             if (lines.Count > 0 && splitContainer1.Panel2Collapsed)
             {
                 splitContainer1.Panel2Collapsed = false;
-                this.Width += 400;
+                this.Width *= 2;
             }
         }
     }
