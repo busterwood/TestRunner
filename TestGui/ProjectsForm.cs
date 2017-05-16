@@ -97,10 +97,8 @@ namespace TestGui
 
         private void projectsList_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (projectsList.SelectedItems.Count == 0)
-                return;
-            var selected = projectsList.SelectedItems[0];
-            StartTesting(selected);
+            foreach (ListViewItem selected in projectsList.SelectedItems)
+                StartTesting(selected);
         }
 
         private static void StartTesting(ListViewItem selected)
@@ -158,6 +156,12 @@ namespace TestGui
                 WorkingDirectory = b.Folder,
             };
             Process.Start(si);
+        }
+
+        private void runSelectedMenu_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem selected in projectsList.SelectedItems)
+                StartTesting(selected);
         }
     }
 }

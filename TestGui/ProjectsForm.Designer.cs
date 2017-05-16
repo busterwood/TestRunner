@@ -41,6 +41,7 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.refreshMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.runConsoleMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.runSelectedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -82,7 +83,6 @@
             listViewGroup2,
             listViewGroup3});
             this.projectsList.Location = new System.Drawing.Point(0, 0);
-            this.projectsList.MultiSelect = false;
             this.projectsList.Name = "projectsList";
             this.projectsList.Size = new System.Drawing.Size(543, 347);
             this.projectsList.Sorting = System.Windows.Forms.SortOrder.Descending;
@@ -113,24 +113,32 @@
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.refreshMenu,
+            this.runSelectedMenu,
             this.runConsoleMenu});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(152, 70);
             // 
             // refreshMenu
             // 
             this.refreshMenu.Name = "refreshMenu";
             this.refreshMenu.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.refreshMenu.Size = new System.Drawing.Size(152, 22);
+            this.refreshMenu.Size = new System.Drawing.Size(151, 22);
             this.refreshMenu.Text = "Refresh";
             this.refreshMenu.Click += new System.EventHandler(this.refreshMenu_Click);
             // 
             // runConsoleMenu
             // 
             this.runConsoleMenu.Name = "runConsoleMenu";
-            this.runConsoleMenu.Size = new System.Drawing.Size(152, 22);
+            this.runConsoleMenu.Size = new System.Drawing.Size(151, 22);
             this.runConsoleMenu.Text = "Run &Console...";
             this.runConsoleMenu.Click += new System.EventHandler(this.runConsoleMenu_Click);
+            // 
+            // runSelectedMenu
+            // 
+            this.runSelectedMenu.Name = "runSelectedMenu";
+            this.runSelectedMenu.Size = new System.Drawing.Size(151, 22);
+            this.runSelectedMenu.Text = "Run &Selected...";
+            this.runSelectedMenu.Click += new System.EventHandler(this.runSelectedMenu_Click);
             // 
             // ProjectsForm
             // 
@@ -161,5 +169,6 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem refreshMenu;
         private System.Windows.Forms.ToolStripMenuItem runConsoleMenu;
+        private System.Windows.Forms.ToolStripMenuItem runSelectedMenu;
     }
 }
