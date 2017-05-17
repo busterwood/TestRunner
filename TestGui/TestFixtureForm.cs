@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using static System.StringComparison;
 
 namespace TestGui
 {
@@ -37,16 +38,16 @@ namespace TestGui
             this.Text = Runner.AsmName;
             testsList.SetDoubleBuffer();
 
-            passedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("passedGroup", StringComparison.OrdinalIgnoreCase));
-            failedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("failedGroup", StringComparison.OrdinalIgnoreCase));
-            ignoredGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("ignoredGroup", StringComparison.OrdinalIgnoreCase));
-            slowGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("SlowGroup", StringComparison.OrdinalIgnoreCase));
+            passedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("passedGroup", OrdinalIgnoreCase));
+            failedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("failedGroup", OrdinalIgnoreCase));
+            ignoredGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("ignoredGroup", OrdinalIgnoreCase));
+            slowGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("SlowGroup", OrdinalIgnoreCase));
 
-            allFilter = categoriesList.Items.Cast<ListViewItem>().First(item => Equals(item.Tag, "all"));
-            passedFilter = categoriesList.Items.Cast<ListViewItem>().First(item => Equals(item.Tag, "passedGroup"));
-            failedFilter = categoriesList.Items.Cast<ListViewItem>().First(item => Equals(item.Tag, "failedGroup"));
-            ignoredFilter = categoriesList.Items.Cast<ListViewItem>().First(item => Equals(item.Tag, "ignoredGroup"));
-            slowFilter = categoriesList.Items.Cast<ListViewItem>().First(item => Equals(item.Tag, "slowGroup"));
+            allFilter = categoriesList.Items.Cast<ListViewItem>().First(item => string.Equals((string)item.Tag, "all", OrdinalIgnoreCase));
+            passedFilter = categoriesList.Items.Cast<ListViewItem>().First(item => string.Equals((string)item.Tag, "passedGroup", OrdinalIgnoreCase));
+            failedFilter = categoriesList.Items.Cast<ListViewItem>().First(item => string.Equals((string)item.Tag, "failedGroup", OrdinalIgnoreCase));
+            ignoredFilter = categoriesList.Items.Cast<ListViewItem>().First(item => string.Equals((string)item.Tag, "ignoredGroup", OrdinalIgnoreCase));
+            slowFilter = categoriesList.Items.Cast<ListViewItem>().First(item => string.Equals((string)item.Tag, "slowGroup", OrdinalIgnoreCase));
 
             Runner.RunStarted += RunStarted;
             Runner.RunFinished += RunFinished;
@@ -212,11 +213,10 @@ namespace TestGui
         {
             foreach (ListViewGroup grp in testsList.Groups)
             {
-                if (grp.Name.Equals(groupName, StringComparison.OrdinalIgnoreCase))
+                if (grp.Name.Equals(groupName, OrdinalIgnoreCase))
                     grp.Expand();
                 else
-                    grp.Collapse();
-
+                    grp.Hide();
             }
         }
 

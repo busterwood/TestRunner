@@ -109,12 +109,16 @@
             this.testsList.FullRowSelect = true;
             listViewGroup1.Header = "Failed";
             listViewGroup1.Name = "failedGroup";
+            listViewGroup1.Tag = "failedGroup";
             listViewGroup2.Header = "Passed";
             listViewGroup2.Name = "passedGroup";
+            listViewGroup2.Tag = "passedGroup";
             listViewGroup3.Header = "Ignored";
             listViewGroup3.Name = "ignoredGroup";
+            listViewGroup3.Tag = "ignoredGroup";
             listViewGroup4.Header = "Slow Tests";
             listViewGroup4.Name = "slowGroup";
+            listViewGroup4.Tag = "slowGroup";
             this.testsList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
             listViewGroup2,
