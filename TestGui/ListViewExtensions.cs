@@ -19,7 +19,7 @@ namespace TestGui
         const int LVGF_GROUPID = 0x10;
 
         [DllImport("user32.dll")]
-        static extern int SendMessage(IntPtr window, int message, int wParam, [In]LvGroup lParam);
+        static extern int SendMessage(IntPtr window, int message, int wParam, LvGroup lParam);
 
         static ListViewExtensions()
         {

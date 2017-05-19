@@ -20,6 +20,7 @@ namespace Test
         int failed;
         int ignored;
         Stopwatch watch;
+        bool fixtureSetupFailed;
 
         public Stats Statistics => new Stats(testCount, passed, failed, ignored);
 
@@ -55,7 +56,8 @@ namespace Test
         public void RunTests()
         {
             obj = Activator.CreateInstance(fixture);
-            FixtureSetUp();
+            fixtureSetupFailed = FixtureSetUp() == false;
+
             foreach (var testMethod in methods)
             {
                 if (testMethod.IsIgnored())
@@ -82,7 +84,15 @@ namespace Test
 
         private void RunTest(TestRunner test)
         {
+            if (fixtureSetupFailed)
+            {
+                test.FixtureSetupFailed();
+                failed++;
+                return;
+            }
+
             test.Run();
+
             if (test.Passed)
                 passed++;
             else if (test.Failed)
@@ -99,14 +109,28 @@ namespace Test
             }
             catch (TargetInvocationException ex)
             {
-                StdErr.Error($"{fixture.Name}: Failed to setup fixture: {ex.InnerException}");
+                ReportError(ex.InnerException);
                 return false;
             }
             catch (Exception ex)
             {
-                StdErr.Error($"{fixture.Name}: Failed to setup fixture: {ex}");
+                ReportError(ex);
                 return false;
             }
+        }
+
+        private void ReportError(Exception ex)
+        {
+            var tlex = ex as ReflectionTypeLoadException;
+            if (tlex != null)
+            {
+                foreach (var e in tlex.LoaderExceptions)
+                {
+                    StdErr.Info(e.ToString());
+                }
+            }
+
+            StdErr.Error($"{fixture.Name}: Failed to setup fixture: {ex}");
         }
 
         TestRunner CreateTest(MethodInfo testMethod)

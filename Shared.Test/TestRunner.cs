@@ -41,9 +41,15 @@ namespace Test
 
         public bool Failed { get; private set; }
 
+        public void FixtureSetupFailed()
+        {
+            LogStartOfTest();
+            Fail("FixtureSetUp failed, test not run");
+        }
+
         public void Run()
-        {            
-            StdOut.Start($"{fixtureName}.{testName}{(category != null ? ": " : "")}{category}");
+        {
+            LogStartOfTest();
             ChangeTypeOfArguments();
             SetNunitContext();
             watch.Reset();
@@ -56,6 +62,11 @@ namespace Test
             else
                 RunTestMethod();
             TearDown();
+        }
+
+        private void LogStartOfTest()
+        {
+            StdOut.Start($"{fixtureName}.{testName}{(category != null ? ": " : "")}{category}");
         }
 
         private void SetNunitContext()

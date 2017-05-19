@@ -216,7 +216,7 @@ namespace TestGui
                 if (grp.Name.Equals(groupName, OrdinalIgnoreCase))
                     grp.Expand();
                 else
-                    grp.Hide();
+                    grp.Collapse();
             }
         }
 

@@ -74,7 +74,7 @@ namespace Test.Daemon
             Task.WaitAll(tasks);
             testProcess.WaitForExit(); //TODO: timeout and terminate
             testProcess = null;
-            StdErr.Info($"Finished test run of '{asmName}'");
+            StdErr.Info($"Finished test run of '{asmName}'" + Environment.NewLine);
         }
 
         static void EchoAsync(TextReader input, TextWriter output)
