@@ -144,6 +144,8 @@ namespace Test
             }
         }
 
+        static readonly Dictionary<string, bool> previousLoadAttempt = new Dictionary<string, bool>();
+
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var simpleName = args.Name.Split(',').First();
@@ -155,8 +157,9 @@ namespace Test
                 fullPath = Path.Combine(Directory.GetCurrentDirectory(), simpleName + ".exe");
             if (File.Exists(fullPath))
                 loaded = Assembly.LoadFile(fullPath);
-            if (loaded == null)
+            if (loaded == null && !previousLoadAttempt.ContainsKey(simpleName))
                 StdErr.Info($"Failed to load assembly '{args.Name}' requested by {args.RequestingAssembly?.FullName}");
+            previousLoadAttempt[simpleName] = loaded != null;
             return loaded;
         }
 
