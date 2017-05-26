@@ -15,7 +15,9 @@ Supports:
 * `[TestCase(...)]` attruibute
 * `[Setup]` attruibute
 * `[TearDown]` attruibute
-* `[Timeout]` attruibute on methods and the class level
+* `[Timeout]` attribute on methods and the class level
+* `[Ignore]` attribute on methods and the class level
+* `[Explicit]` attribute on methods and the class level
 
 Test results are output to StdOut, information is returned on StdErr.
 Note that other properties of the `Test` and `TestCase` attribuites are **not** supported, e.g `ExpectException`, `ExceptionMessage`.
