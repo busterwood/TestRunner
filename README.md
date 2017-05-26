@@ -15,6 +15,7 @@ Supports:
 * `[TestCase(...)]` attruibute
 * `[Setup]` attruibute
 * `[TearDown]` attruibute
+* `[SetUpFixture]` attruibute at the class level
 * `[Timeout]` attribute on methods and the class level
 * `[Ignore]` attribute on methods and the class level
 * `[Explicit]` attribute on methods and the class level
