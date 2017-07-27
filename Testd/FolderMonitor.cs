@@ -56,7 +56,7 @@ namespace Test.Daemon
 
         private void ReadAllChangesAsync()
         {
-            var timeout = TimeSpan.FromSeconds(0.5);
+            var timeout = TimeSpan.FromSeconds(0.9);
             for(;;)
             {
                 ChangedEventArgs value;
