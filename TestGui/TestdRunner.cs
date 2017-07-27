@@ -107,7 +107,8 @@ namespace TestGui
                                 if (line == null)
                                     return;
                                 int tests = ParseNumberOfTests(line);
-                                RunStarted?.Invoke(this, new RunStartedEventArgs { Total = tests });
+                                bool debug = line.Split(',').Any(x => x.Trim() == "debug");
+                                RunStarted?.Invoke(this, new RunStartedEventArgs { Total = tests, Debug=debug });
                             }
                             else if (line.Contains("Finished test run of '"))
                             {
@@ -206,6 +207,11 @@ namespace TestGui
             testdProcess.StandardInput.WriteLine("run");
         }
 
+        public void DebugTests()
+        {
+            testdProcess.StandardInput.WriteLine("debug");
+        }
+
         internal void Stop()
         {
             testdProcess.StandardInput.WriteLine();
@@ -248,6 +254,7 @@ namespace TestGui
     public class RunStartedEventArgs : EventArgs
     {
         public int Total { get; set; }
+        public bool Debug { get; set; }
     }
 
     public class RunFinishedEventArgs : EventArgs

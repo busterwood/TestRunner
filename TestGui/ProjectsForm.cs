@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BusterWood.Collections;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -135,15 +136,23 @@ namespace TestGui
             RunConsole(selected);
         }
 
-        private void RunConsole(ListViewItem selected)
+        private void debugConsoleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (projectsList.SelectedItems.Count == 0)
+                return;
+            var selected = projectsList.SelectedItems[0];
+            RunConsole(selected, "--debug");
+        }
+
+        private void RunConsole(ListViewItem selected, string extraArg = null)
         {
             Build b = (Build)selected.Tag;
-            var args = new List<string>();
-            string testExe = "Testd.exe";
+            var args = new UniqueList<string>();
             if (b.X64)
                 args.Add("--x64");
             else if (b.X86)
                 args.Add("--x86");
+            args.Add(extraArg);
             var asmName = selected.SubItems[1].Text;
             args.Add(asmName);
 
@@ -151,7 +160,7 @@ namespace TestGui
             var location = Path.GetDirectoryName(asm.Location);
             var si = new ProcessStartInfo
             {
-                FileName = Path.Combine(location, testExe),
+                FileName = Path.Combine(location, "Testd.exe"),
                 Arguments = string.Join(" ", args),
                 WorkingDirectory = b.Folder,
             };
@@ -163,5 +172,6 @@ namespace TestGui
             foreach (ListViewItem selected in projectsList.SelectedItems)
                 StartTesting(selected);
         }
+
     }
 }

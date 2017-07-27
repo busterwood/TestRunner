@@ -59,6 +59,7 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.statusText = new System.Windows.Forms.ToolStripStatusLabel();
+            this.debugTestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             categoryColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -165,33 +166,35 @@
             this.detailsMenuItem,
             this.listMenuItem,
             this.toolStripMenuItem1,
-            this.runTestsAgainMenuItem});
+            this.runTestsAgainMenuItem,
+            this.debugTestsToolStripMenuItem});
             this.contextMenu.Name = "contextMenu";
-            this.contextMenu.Size = new System.Drawing.Size(155, 76);
+            this.contextMenu.Size = new System.Drawing.Size(174, 120);
             // 
             // detailsMenuItem
             // 
             this.detailsMenuItem.Name = "detailsMenuItem";
-            this.detailsMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.detailsMenuItem.Size = new System.Drawing.Size(173, 22);
             this.detailsMenuItem.Text = "Details";
             this.detailsMenuItem.Click += new System.EventHandler(this.detailsMenuItem_Click);
             // 
             // listMenuItem
             // 
             this.listMenuItem.Name = "listMenuItem";
-            this.listMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.listMenuItem.Size = new System.Drawing.Size(173, 22);
             this.listMenuItem.Text = "List";
             this.listMenuItem.Click += new System.EventHandler(this.listMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(151, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(170, 6);
             // 
             // runTestsAgainMenuItem
             // 
             this.runTestsAgainMenuItem.Name = "runTestsAgainMenuItem";
-            this.runTestsAgainMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.runTestsAgainMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.runTestsAgainMenuItem.Size = new System.Drawing.Size(173, 22);
             this.runTestsAgainMenuItem.Text = "Run tests again";
             this.runTestsAgainMenuItem.Click += new System.EventHandler(this.runTestsAgainMenuItem_Click);
             // 
@@ -285,6 +288,14 @@
             this.statusText.Spring = true;
             this.statusText.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // debugTestsToolStripMenuItem
+            // 
+            this.debugTestsToolStripMenuItem.Name = "debugTestsToolStripMenuItem";
+            this.debugTestsToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F9;
+            this.debugTestsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.debugTestsToolStripMenuItem.Text = "&Debug tests";
+            this.debugTestsToolStripMenuItem.Click += new System.EventHandler(this.debugTestsToolStripMenuItem_Click);
+            // 
             // TestFixtureForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 18F);
@@ -330,6 +341,7 @@
         private System.Windows.Forms.ImageList testIcons32;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem runTestsAgainMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugTestsToolStripMenuItem;
     }
 }
 

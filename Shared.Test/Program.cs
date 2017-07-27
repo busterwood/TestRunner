@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using BusterWood.Collections;
 
 namespace Test
 {
@@ -17,6 +19,7 @@ namespace Test
             sw.Start();
 
             List<string> args = argv.ToList();
+            bool debug = args.Remove("--debug");
             if (args.Count == 0)
             {
                 StdErr.Error("pass the assembly to test on the command line");
@@ -29,13 +32,22 @@ namespace Test
             if (asm == null)
                 return Exit(2);
 
-            List<Type> fixtureTypes = FindFixutres(asm);
+            var fixtureTypes = FindFixutres(asm);
             if (fixtureTypes == null)
                 return Exit(3);
 
             List<FixtureRunner> fixtures = CreateFixtureRunners(fixtureTypes);
 
-            StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures");
+            StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures" + (debug ? ", debug" : ""));
+
+            if (debug && !Debugger.IsAttached)
+            {
+                StdErr.Info("Waiting for debugger to attach...");
+                while (!Debugger.IsAttached)
+                    Thread.Sleep(100);
+            }
+            else
+                StdErr.Info("Debugger is attached");
 
             var setupFixture = CreateSetUpFixtureRunner(asm);
             if (setupFixture != null)
@@ -57,10 +69,10 @@ namespace Test
             //    return 5;
 
             StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, {totals.Ignored} ignored, in {sw.Elapsed.TotalSeconds:N1} seconds");
-
+#if DEBUG
             if (Debugger.IsAttached)
                 Debugger.Break();
-
+#endif
             return Exit(0);
         }
 
@@ -90,7 +102,7 @@ namespace Test
             return testDomain.ExecuteAssembly(Assembly.GetExecutingAssembly().Location, args);
         }
 
-        private static List<FixtureRunner> CreateFixtureRunners(List<Type> fixtureTypes)
+        private static List<FixtureRunner> CreateFixtureRunners(IList<Type> fixtureTypes)
         {
             var runners = new List<FixtureRunner>(fixtureTypes.Count);
             foreach (var type in fixtureTypes)
@@ -163,14 +175,14 @@ namespace Test
             return loaded;
         }
 
-        private static List<Type> FindFixutres(Assembly testAsm)
+        private static UniqueList<Type> FindFixutres(Assembly testAsm)
         {
             try
             {
                 return testAsm
                     .GetExportedTypes()
                     .Where(type => !type.IsAbstract && type.IsTestFixture() && !type.IsIgnored() && !type.IsExplicit())
-                    .ToList();
+                    .ToUniqueList();
             }
             catch (Exception ex)
             {

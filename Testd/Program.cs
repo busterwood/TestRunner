@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BusterWood.Collections;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,57 +11,68 @@ namespace Test.Daemon
 {
     class Program
     {
+        static UniqueList<string> testArgs;
         static string asmName;
-        static string testExe = "Test.exe";
+        static string testExe;
         static Process testProcess;
 
         static int Main(string[] argv)
         {
-            var args = argv.ToList();
+            var args = argv.ToUniqueList(StringComparer.OrdinalIgnoreCase);
 
-            if (string.Equals(args[0], "--x64", StringComparison.OrdinalIgnoreCase))
-            {
-                testExe = "TestX64.exe";
-                args.RemoveAt(0);
-            }
-            else if (string.Equals(args[0], "--x86", StringComparison.OrdinalIgnoreCase))
-            {
-                testExe = "TestX86.exe";
-                args.RemoveAt(0);
-            }
+            testExe = TestExeFromArgs(args);
 
             if (args.Count == 0)
             {
-                StdErr.Error("First argument must be the assembly to test");
+                StdErr.Error("Required argumenment is missing: assembly to test");
                 return 1;
             }
-            asmName = args.First();
+            testArgs = args;
+            asmName = args.First(a => !a.StartsWith("-", StringComparison.Ordinal));
 
             var monitor = new FolderMonitor(Directory.GetCurrentDirectory());
             monitor.Changed += Monitor_Changed;
             monitor.Start();
 
-            for(;;)
+            for (;;)
             {
-                var line = Console.ReadLine();
+                var line = Console.ReadLine()?.ToLower();
                 if (string.IsNullOrEmpty(line))
                     break;
-                if (line.Equals("run", StringComparison.OrdinalIgnoreCase))
-                    monitor.TriggerChange();
+                else if (line == "run")
+                    monitor.RunNow();
+                else if (line == "debug")
+                    monitor.DebugNow();
             }
             testProcess?.Kill();
             return 0;
         }
 
-        private static void Monitor_Changed(object sender, EventArgs e)
+        static string TestExeFromArgs(IList<string> args)
+        {
+            if (args.Remove("--x64"))
+                return "TestX64.exe";
+            else if (args.Remove("--x86"))
+                return "TestX86.exe";
+            else
+                return "Test.exe";
+        }
+
+        private static void Monitor_Changed(object sender, ChangedEventArgs e)
         {
             StdErr.Info($"Starting new test run of '{asmName}'....");
             var asm = Assembly.GetExecutingAssembly();
             var location = Path.GetDirectoryName(asm.Location);
+
+            // add --debug if needed
+            var args = testArgs.ToUniqueList(StringComparer.OrdinalIgnoreCase);
+            if (e.Debug)
+                args.Add("--debug");
+
             var si = new ProcessStartInfo
             {
                 FileName = Path.Combine(location, testExe),
-                Arguments = asmName,
+                Arguments = string.Join(" ", args),
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 CreateNoWindow = true,

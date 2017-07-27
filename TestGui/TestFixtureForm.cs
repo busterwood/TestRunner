@@ -77,6 +77,7 @@ namespace TestGui
             }
             testsList.Cursor = Cursors.AppStarting;
             runTestsAgainMenuItem.Enabled = false;
+            debugTestsToolStripMenuItem.Enabled = false;
             allFilter.Text = $"All";
             passedFilter.Text = $"Passed";
             failedFilter.Text = $"Failed";
@@ -85,7 +86,10 @@ namespace TestGui
             testsList.Items.Clear();
             statusProgress.Value = 0;
             statusProgress.Maximum = e.Total;
-            statusText.Text = $"Running {e.Total} tests";
+            if (e.Debug)
+                statusText.Text = $"Waiting for debugger to attach, {e.Total} tests";
+            else
+                statusText.Text = $"Running {e.Total} tests";
             slowCount = 0;
             outputText.Text = "";
         }
@@ -105,6 +109,7 @@ namespace TestGui
             statusProgress.Value = 0;
             statusText.Text = "Monitoring " + Runner.Folder;
             runTestsAgainMenuItem.Enabled = true;
+            debugTestsToolStripMenuItem.Enabled = true;
             testsList.Cursor = Cursors.Default;
         }
 
@@ -233,6 +238,7 @@ namespace TestGui
         private void runTestsAgainMenuItem_Click(object sender, EventArgs e)
         {
             runTestsAgainMenuItem.Enabled = false;
+            debugTestsToolStripMenuItem.Enabled = false;
             Runner.RunTests();
         }
 
@@ -253,6 +259,13 @@ namespace TestGui
                 splitContainer1.Panel2Collapsed = false;
                 this.Width *= 2;
             }
+        }
+
+        private void debugTestsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            runTestsAgainMenuItem.Enabled = false;
+            debugTestsToolStripMenuItem.Enabled = false;
+            Runner.DebugTests();
         }
     }
 }

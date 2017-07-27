@@ -24,15 +24,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{0A
 		tests.png = tests.png
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.BusterWood.Collections", "Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.shproj", "{D45BF372-4DE5-4C15-AF87-7B36EDC3AE7F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.projitems*{4e02fb3c-742e-4e03-8b77-b6336c5841a5}*SharedItemsImports = 4
 		Console\Console.projitems*{4e02fb3c-742e-4e03-8b77-b6336c5841a5}*SharedItemsImports = 4
 		Shared.Test\Shared.Test.projitems*{4e02fb3c-742e-4e03-8b77-b6336c5841a5}*SharedItemsImports = 4
+		Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.projitems*{59a11410-55c6-4691-a4d7-2897cb81b44b}*SharedItemsImports = 4
 		Console\Console.projitems*{59a11410-55c6-4691-a4d7-2897cb81b44b}*SharedItemsImports = 4
+		Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.projitems*{852e1333-e5f3-468c-9b32-cc883cd2da41}*SharedItemsImports = 4
+		Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.projitems*{a907bf28-1c64-4045-981b-ff443dcd5e5e}*SharedItemsImports = 4
 		Console\Console.projitems*{a907bf28-1c64-4045-981b-ff443dcd5e5e}*SharedItemsImports = 4
 		Shared.Test\Shared.Test.projitems*{a907bf28-1c64-4045-981b-ff443dcd5e5e}*SharedItemsImports = 4
+		Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.projitems*{d45bf372-4de5-4c15-af87-7b36edc3ae7f}*SharedItemsImports = 13
 		Shared.Test\Shared.Test.projitems*{ef834087-2273-4b49-bf05-d126ad79b701}*SharedItemsImports = 13
 		Console\Console.projitems*{fce023a7-2ce8-4ba5-8258-1178f72ef457}*SharedItemsImports = 13
+		Collections\Shared.BusterWood.Collections\Shared.BusterWood.Collections.projitems*{fd4bfd7c-4ae6-4eed-844d-0808e69c4ede}*SharedItemsImports = 4
 		Console\Console.projitems*{fd4bfd7c-4ae6-4eed-844d-0808e69c4ede}*SharedItemsImports = 4
 		Shared.Test\Shared.Test.projitems*{fd4bfd7c-4ae6-4eed-844d-0808e69c4ede}*SharedItemsImports = 4
 	EndGlobalSection

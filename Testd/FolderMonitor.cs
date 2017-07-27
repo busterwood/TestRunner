@@ -7,12 +7,12 @@ namespace Test.Daemon
 {
     class FolderMonitor
     {
-        readonly BlockingCollection<DateTime> changes = new BlockingCollection<DateTime>();
+        readonly BlockingCollection<ChangedEventArgs> changes = new BlockingCollection<ChangedEventArgs>();
         readonly string folder;
         FileSystemWatcher exes;
         FileSystemWatcher dlls;
 
-        public event EventHandler Changed;
+        public event EventHandler<ChangedEventArgs> Changed;
 
         public FolderMonitor(string folder)
         {
@@ -34,40 +34,51 @@ namespace Test.Daemon
             dlls.EnableRaisingEvents = true;
 
             // start the tests
-            changes.Add(DateTime.UtcNow);
+            changes.Add(new ChangedEventArgs());
 
             Task.Run(() => StartWorker());
         }
 
         private void FileChanged(object sender, FileSystemEventArgs e)
         {
-            changes.Add(DateTime.UtcNow);
+            changes.Add(new ChangedEventArgs());
         }
 
         void StartWorker()
         {
             for(;;)
             {
-                changes.Take(); // wait for one change
+                var args = changes.Take(); // wait for one change
                 ReadAllChangesAsync(); // then consume all following ones until it stops changing
-                Changed?.Invoke(this, EventArgs.Empty); // then run the tests
+                Changed?.Invoke(this, args); // then run the tests
             }
         }
 
         private void ReadAllChangesAsync()
         {
+            var timeout = TimeSpan.FromSeconds(0.3);
             for(;;)
             {
-                DateTime value;
-                bool got = changes.TryTake(out value, TimeSpan.FromSeconds(1));
+                ChangedEventArgs value;
+                bool got = changes.TryTake(out value, timeout);
                 if (!got)
                     return;
             }
         }
 
-        public void TriggerChange()
+        public void RunNow()
         {
-            changes.Add(DateTime.UtcNow);
+            changes.Add(new ChangedEventArgs { Debug = false });
         }
+
+        public void DebugNow()
+        {
+            changes.Add(new ChangedEventArgs { Debug = true });
+        }
+    }
+
+    public class ChangedEventArgs : EventArgs
+    {
+        public bool Debug { get; set; }
     }
 }
