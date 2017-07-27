@@ -43,7 +43,7 @@ namespace Test
             int count = 0;
             foreach (var test in methods)
             {
-                if (test.IsIgnored())
+                if (test.IsIgnored() || test.IsExplicit())
                     continue;
                 if (test.IsTest())
                     count++;
@@ -60,7 +60,7 @@ namespace Test
 
             foreach (var testMethod in methods)
             {
-                if (testMethod.IsIgnored())
+                if (testMethod.IsIgnored() || testMethod.IsExplicit())
                 {
                     StdOut.Ignore($"{fixture.Name}.{testMethod.Name}");
                     ignored++;

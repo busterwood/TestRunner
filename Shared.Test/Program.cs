@@ -169,7 +169,7 @@ namespace Test
             {
                 return testAsm
                     .GetExportedTypes()
-                    .Where(t => !t.IsAbstract && t.IsTestFixture() && !t.IsIgnored())
+                    .Where(type => !type.IsAbstract && type.IsTestFixture() && !type.IsIgnored() && !type.IsExplicit())
                     .ToList();
             }
             catch (Exception ex)

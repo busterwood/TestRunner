@@ -117,6 +117,10 @@ namespace Test
                 else
                     Pass();
             }
+            catch (Exception ex) when (ex.IsSuccessException())
+            {
+                Pass();
+            }
             catch (TargetInvocationException ex)
             {
                 Fail(ex.InnerException);
@@ -149,7 +153,11 @@ namespace Test
                 result.Wait();
                 Pass();
             }
-            catch (AggregateException ex)when (ex.InnerException is TargetInvocationException)
+            catch (AggregateException ex) when (ex.InnerException.IsSuccessException())
+            {
+                Pass();
+            }
+            catch (AggregateException ex) when (ex.InnerException is TargetInvocationException)
             {
                 Fail(ex.InnerException.InnerException);
             }

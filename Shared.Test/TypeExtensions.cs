@@ -18,7 +18,26 @@ namespace Test
 
         public static bool IsIgnored(this Type type)
         {
+            return HasIgnoredAttribute(type) || HasTestFixtureIgnoredProperty(type);
+        }
+
+        private static bool HasIgnoredAttribute(Type type)
+        {
             return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "IgnoreAttribute", StringComparison.Ordinal));
+        }
+
+        public static bool HasTestFixtureIgnoredProperty(this Type type)
+        {
+            var fixture = type.GetCustomAttributesData()
+                .FirstOrDefault(a => string.Equals(a.AttributeType.Name, "TestFixtureAttribute", StringComparison.Ordinal));
+            var ignored = fixture?.NamedArguments.FirstOrDefault(na => string.Equals(na.MemberName, "Ignore")).TypedValue.Value;
+            return ignored?.Equals(true) ?? false;
+        }
+
+        /// <summary>Only run when check on the UI or included via a category</summary>
+        public static bool IsExplicit(this Type type)
+        {
+            return type.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "ExplicitAttribute", StringComparison.Ordinal));
         }
 
         public static bool IsTestFixtureSetUp(this MethodInfo method)
@@ -61,9 +80,25 @@ namespace Test
             return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "IgnoreAttribute", StringComparison.Ordinal));
         }
 
+        /// <summary>Only run when check on the UI or included via a category</summary>
+        public static bool IsExplicit(this MethodInfo method)
+        {
+            return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "ExplicitAttribute", StringComparison.Ordinal));
+        }
+
         public static bool IsTestCase(this CustomAttributeData attr)
         {
             return string.Equals(attr.AttributeType.Name, "TestCaseAttribute", StringComparison.Ordinal);
+        }
+
+        public static bool IsSuccessException(this Exception ex)
+        {
+            return string.Equals(ex?.GetType()?.Name, "SuccessException", StringComparison.Ordinal) || IsSuccessException(ex as TargetInvocationException);
+        }
+
+        public static bool IsSuccessException(this TargetInvocationException ex)
+        {
+            return string.Equals(ex?.InnerException?.GetType()?.Name, "SuccessException", StringComparison.Ordinal);
         }
 
         public static string Category(this Type type)
