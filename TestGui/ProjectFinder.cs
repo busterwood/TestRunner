@@ -29,7 +29,7 @@ namespace TestGui
         private async Task FindBuilds(object testProjectFile)
         {
             await Task.Yield();
-            var pf = await LoadProjectFile((string)testProjectFile);
+            var pf = LoadProjectFile((string)testProjectFile);
             var args = new FoundProjectEventArgs
             {
                 Folder = Path.GetDirectoryName((string)testProjectFile),
@@ -44,26 +44,82 @@ namespace TestGui
                 ProjectFound?.Invoke(this, args);
         }
 
-        private async Task<ProjectFile> LoadProjectFile(string testProjectFile)
+        private ProjectFile LoadProjectFile(string testProjectFile)
+        {
+            var lines = File.ReadAllLines(testProjectFile);
+            if (lines.Length == 0)
+                return new ProjectFile(Path.GetFileNameWithoutExtension(testProjectFile), new List<string>());
+
+            if (lines[0].StartsWith(@"<Project Sdk=""Microsoft.NET.Sdk""", StringComparison.Ordinal))
+                return Read2017Projectfile(testProjectFile, lines);
+            else
+                return ReadOlderProjectfile(lines);
+
+        }
+
+        private ProjectFile ReadOlderProjectfile(string[] lines)
         {
             string asmName = null;
             var outputs = new List<string>();
-            using (StreamReader r = new StreamReader(testProjectFile))
+
+            foreach (var line in lines)
             {
-                for(;;)
+                // stop at EOF or first item group
+                if (IsItemGroup(line))
+                    break;
+
+                if (asmName == null)
+                    asmName = ParseAssemblyName(line);
+
+                var temp = ParseOutputPath(line);
+                if (temp != null)
+                    outputs.Add(temp);
+            }
+            return new ProjectFile(asmName, outputs);
+        }
+
+        private ProjectFile Read2017Projectfile(string projectFile, string[] lines)
+        {
+            string asmName = Path.GetFileNameWithoutExtension(projectFile) + ".dll";
+            var outputs = new List<string>();
+
+            foreach (var line in lines)
+            {
+                outputs.AddRange(ParseTargetFramework(line, asmName));
+                outputs.AddRange(ParseTargetFrameworks(line, asmName));
+            }
+            return new ProjectFile(asmName, outputs);
+        }
+
+        private IEnumerable<string> ParseTargetFramework(string line, string asmName)
+        {
+            const string START = "<TargetFramework>";
+            const string END = "</TargetFramework>";
+            int start = line.IndexOf(START, StringComparison.Ordinal);
+            int end = line.IndexOf(END, StringComparison.Ordinal);
+            if (start >= 0 && end > start)
+            {
+                start += START.Length;
+                var framework = line.Substring(start, end - start);
+                yield return string.Join(Path.PathSeparator.ToString(), "bin", "Debug", framework, asmName);
+                yield return string.Join(Path.PathSeparator.ToString(), "bin", "Release", framework, asmName);
+            }
+        }
+
+        private IEnumerable<string> ParseTargetFrameworks(string line, string asmName)
+        {
+            const string START = "<TargetFramework>";
+            const string END = "</TargetFramework>";
+            int start = line.IndexOf(START, StringComparison.Ordinal);
+            int end = line.IndexOf(END, StringComparison.Ordinal);
+            if (start >= 0 && end > start)
+            {
+                start += START.Length;
+                var frameworks = line.Substring(start, end - start).Split(';');
+                foreach (var framework in frameworks)
                 {
-                    var line = await r.ReadLineAsync();
-
-                    // stop at EOF or first item group
-                    if (line == null || IsItemGroup(line))
-                        return new ProjectFile(asmName, outputs);
-                    
-                    if (asmName == null)
-                        asmName = ParseAssemblyName(line);
-
-                    var temp = ParseOutputPath(line);
-                    if (temp != null)
-                        outputs.Add(temp);
+                    yield return string.Join(Path.PathSeparator.ToString(), "bin", "Debug", framework, asmName);
+                    yield return string.Join(Path.PathSeparator.ToString(), "bin", "Release", framework, asmName);
                 }
             }
         }
