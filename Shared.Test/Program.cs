@@ -146,7 +146,7 @@ namespace Test
             {
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                 var path = Path.Combine(Directory.GetCurrentDirectory(), asmName + ".dll");
-                return Assembly.LoadFile(path);
+                return Assembly.LoadFrom(path);
                 
             }
             catch (Exception ex)
