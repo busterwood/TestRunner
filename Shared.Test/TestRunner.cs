@@ -57,7 +57,7 @@ namespace Test
             if (!SetUp())
                 return;
             object timeout = TestTimeout() ?? FixtureTimeout();
-            if (timeout != null)
+            if (timeout != null && !Debugger.IsAttached) // ignore timeout when debugger is attached
                 RunTestWithTimeout(args, timeout);
             else
                 RunTestMethod();
