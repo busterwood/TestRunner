@@ -120,6 +120,10 @@ namespace Test.Daemon
                 return ConsoleColor.Cyan;
             if (bits[1] == " ERROR")
                 return ConsoleColor.Red;
+            if (bits[0] == "START")
+                return ConsoleColor.DarkCyan;
+            if (bits[0] == "-> done") // specflow pattern
+                return ConsoleColor.DarkGreen;
             return Console.ForegroundColor;
         }
     }
