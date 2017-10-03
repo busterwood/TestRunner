@@ -75,7 +75,8 @@ namespace Test
             {
                 { "Test.Name", testName },
                 { "Test.FullName", fixtureName + "." + testName },
-                { "WorkDirectory", Environment.CurrentDirectory }
+                { "WorkDirectory", Environment.CurrentDirectory },
+                { "TestDirectory", Environment.CurrentDirectory },
             };
             CallContext.LogicalSetData("NUnit.Framework.TestContext", context);
         }
