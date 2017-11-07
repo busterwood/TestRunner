@@ -152,7 +152,12 @@ namespace Test
 
         static string TestCaseName(MethodInfo test, object[] args)
         {
-            return test.Name + "(" + string.Join(",", args.Select(a => a is string ? '"' + a.ToString() + '"' : a)) + ")";
+            return test.Name + "(" + string.Join(",", args.Select(a => a is string ? '"' + ReplaceSpecialChars(a.ToString()) + '"' : a)) + ")";
+        }
+
+        private static string ReplaceSpecialChars(string s)
+        {
+            return s.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
         }
 
         bool FixtureTearDown()
