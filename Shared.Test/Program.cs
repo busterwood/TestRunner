@@ -18,6 +18,8 @@ namespace Test
             var sw = new Stopwatch();
             sw.Start();
 
+            Console.CancelKeyPress += (sender, e) => Exit(99);
+
             List<string> args = argv.ToList();
             bool list = args.Remove("--list");
             bool debug = args.Remove("--debug");
