@@ -19,13 +19,14 @@ namespace Test
             sw.Start();
 
             List<string> args = argv.ToList();
+            bool list = args.Remove("--list");
             bool debug = args.Remove("--debug");
+            string testToRun = args.StringValue("--run");
             if (args.Count == 0)
             {
                 StdErr.Error("pass the assembly to test on the command line");
                 return Exit(1);
             }
-
             SetCustomConfigFile(args[0]);
 
             var asm = LoadTestAssembly(args[0]);
@@ -38,16 +39,14 @@ namespace Test
 
             List<FixtureRunner> fixtures = CreateFixtureRunners(fixtureTypes);
 
-            StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures" + (debug ? ", debug" : ""));
-
-            if (debug && !Debugger.IsAttached)
+            if (list)
             {
-                StdErr.Info("Waiting for debugger to attach...");
-                while (!Debugger.IsAttached)
-                    Thread.Sleep(100);
+                ListAllTests(fixtures);
+                return Exit(0);
             }
-            else
-                StdErr.Info("Debugger is attached");
+
+            if (debug)
+                WaitForDebuggerToAttach();
 
             var setupFixture = CreateSetUpFixtureRunner(asm);
             if (setupFixture != null)
@@ -57,6 +56,59 @@ namespace Test
                     return Exit(4);
             }
 
+            if (testToRun != null)
+                RunOneTest(testToRun, fixtures);
+            else
+            {
+                StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures" + (debug ? ", debug" : ""));
+                RunAllTests(sw, fixtures);
+            }
+
+#if DEBUG
+            if (Debugger.IsAttached)
+                Debugger.Break();
+#endif
+            return Exit(0);
+        }
+
+        private static void WaitForDebuggerToAttach()
+        {
+            if (Debugger.IsAttached)
+            {
+                StdErr.Info("Debugger is attached");
+                return;
+            }
+
+            StdErr.Info("Waiting for debugger to attach...");
+            while (!Debugger.IsAttached)
+                Thread.Sleep(100);
+        }
+
+        private static void ListAllTests(List<FixtureRunner> fixtures)
+        {
+            foreach (var fr in fixtures)
+            {
+                foreach (var name in fr.TestNames())
+                {
+                    Console.WriteLine(name);
+                }
+            }
+        }
+
+        private static void RunOneTest(string testToRun, List<FixtureRunner> fixtures)
+        {
+            var bits = testToRun.Split('.');
+            var fixtureName = bits.Length == 1 ? null : bits[0];
+            var testName = fixtureName == null ? null : string.Join(".", bits.Skip(1));
+            var fix = fixtureName == null ? fixtures : fixtures.Where(f => f.Type.Name.Equals(fixtureName, StringComparison.OrdinalIgnoreCase));
+            foreach (var fixture in fix)
+            {
+                fixture.RunTest(testName);
+            }
+        }
+
+        private static void RunAllTests(Stopwatch sw, List<FixtureRunner> fixtures)
+        {
             Stats totals = Stats.Zero;
             foreach (var fixture in fixtures)
             {
@@ -69,11 +121,6 @@ namespace Test
             //    return 5;
 
             StdErr.Info($"Totals: {totals.Tests} tests, {totals.Passed} passed, {totals.Failed} failed, {totals.Ignored} ignored, in {sw.Elapsed.TotalSeconds:N1} seconds");
-#if DEBUG
-            if (Debugger.IsAttached)
-                Debugger.Break();
-#endif
-            return Exit(0);
         }
 
         private static int Exit(int code)
@@ -191,5 +238,24 @@ namespace Test
             }
         }
 
+    }
+
+    static class Extensions
+    {
+        public static string StringValue(this List<string> list, string argName, string @default = null)
+        {
+            var idx = list.IndexOf(argName);
+            if (idx < 0)
+                return @default;
+
+            list.RemoveAt(idx); // remove argname
+
+            if (idx == list.Count) // is the value missing?  i.e. argName was the last value in the list?
+                return @default;
+
+            var result = list[idx];
+            list.RemoveAt(idx); // remove value
+            return result;
+        }
     }
 }

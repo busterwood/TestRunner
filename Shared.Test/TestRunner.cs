@@ -13,7 +13,7 @@ namespace Test
     {
         readonly string fixtureName;
         readonly string testName;
-        readonly object obj;
+        object obj;
         readonly MethodInfo setup;
         readonly MethodInfo tearDown;
         readonly MethodInfo test;
@@ -35,11 +35,19 @@ namespace Test
             this.category = test.Category() ?? test.DeclaringType.Category();
         }
 
+        public string Name => testName;
+
         public bool Ignored => test.IsIgnored();
 
         public bool Passed { get; private set; }
 
         public bool Failed { get; private set; }
+
+        public object Obj
+        {
+            get { return obj; }
+            set { obj = value; }
+        }
 
         public void FixtureSetupFailed()
         {

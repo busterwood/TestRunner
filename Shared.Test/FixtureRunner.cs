@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -53,6 +55,27 @@ namespace Test
             return count;
         }
 
+        public IEnumerable<string> TestNames()
+        {
+            foreach (var testMethod in methods)
+            {
+                if (testMethod.IsIgnored() || testMethod.IsExplicit())
+                {
+                    yield return $"IGNORED: {fixture.Name}.{testMethod.Name}";
+                }
+                else if (testMethod.IsTest())
+                {
+                    yield return $"{fixture.Name}.{testMethod.Name}";
+                }
+                else foreach (var testCase in testMethod.CustomAttributes.Where(a => a.IsTestCase()))
+                {
+                    var args = TestCaseArgs(testCase);
+                    var testName = TestCaseName(testMethod, args);
+                    yield return $"{fixture.Name}.{testName}";
+                }
+            }
+        }
+
         public void RunTests()
         {
             obj = Activator.CreateInstance(fixture);
@@ -79,6 +102,39 @@ namespace Test
                     RunTest(test);
                 }
             }
+            FixtureTearDown();
+        }
+
+        internal void RunTest(string testName)
+        {
+            foreach (var testMethod in methods)
+            {
+                if (testMethod.IsTest() && testMethod.Name.Equals(testName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var test = CreateTest(testMethod);
+                    SetupRunTestTearDown(test);
+                    break;
+                }
+                foreach (var testCase in testMethod.CustomAttributes.Where(a => a.IsTestCase()))
+                {
+                    var test = CreateTestCase(testMethod, testCase);
+                    if (test.Name.Equals(testName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SetupRunTestTearDown(test);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void SetupRunTestTearDown(TestRunner test)
+        {
+            obj = Activator.CreateInstance(fixture);
+            fixtureSetupFailed = FixtureSetUp() == false;
+            if (fixtureSetupFailed)
+                return;
+            test.Obj = obj;
+            RunTest(test);
             FixtureTearDown();
         }
 
