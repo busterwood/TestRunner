@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace Test
+namespace Tests
 {
     public class SetUpFixtureRunner
     {

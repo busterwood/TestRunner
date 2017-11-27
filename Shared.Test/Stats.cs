@@ -1,4 +1,4 @@
-﻿namespace Test
+﻿namespace Tests
 {
     struct Stats
     {

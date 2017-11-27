@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Test.Daemon
+namespace Tests.Daemon
 {
     class Program
     {

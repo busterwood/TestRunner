@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace Test
+namespace Tests
 {
     class FixtureRunner
     {
@@ -40,38 +40,25 @@ namespace Test
             watch = new Stopwatch();
         }
 
-        public int CountTests()
-        {
-            int count = 0;
-            foreach (var test in methods)
-            {
-                if (test.IsIgnored() || test.IsExplicit())
-                    continue;
-                if (test.IsTest())
-                    count++;
-                else
-                    count += test.CustomAttributes.Where(a => a.IsTestCase()).Count();
-            }
-            return count;
-        }
+        public int CountTests() => Tests().Where(test => !test.Ignored && !test.Explicit).Count();
 
-        public IEnumerable<string> TestNames()
+        public IEnumerable<string> TestNames() => Tests().Select(t => $"{fixture.Name}.{t.Name}");
+
+        private IEnumerable<TestRunner> Tests()
         {
-            foreach (var testMethod in methods)
+            foreach (var method in methods)
             {
-                if (testMethod.IsIgnored() || testMethod.IsExplicit())
+                var attrsByName = method.CustomAttributes.ToLookup(a => a.AttributeType.Name);
+                if (attrsByName.IsTest())
                 {
-                    yield return $"IGNORED: {fixture.Name}.{testMethod.Name}";
+                    yield return CreateTest(method, attrsByName);
                 }
-                else if (testMethod.IsTest())
+                else
                 {
-                    yield return $"{fixture.Name}.{testMethod.Name}";
-                }
-                else foreach (var testCase in testMethod.CustomAttributes.Where(a => a.IsTestCase()))
-                {
-                    var args = TestCaseArgs(testCase);
-                    var testName = TestCaseName(testMethod, args);
-                    yield return $"{fixture.Name}.{testName}";
+                    foreach (var testCase in attrsByName["TestCaseAttribute"])
+                    {
+                        yield return CreateTestCase(method, testCase, attrsByName);
+                    }
                 }
             }
         }
@@ -81,24 +68,16 @@ namespace Test
             obj = Activator.CreateInstance(fixture);
             fixtureSetupFailed = FixtureSetUp() == false;
 
-            foreach (var testMethod in methods)
+            foreach (var test in Tests())
             {
-                if (testMethod.IsIgnored() || testMethod.IsExplicit())
+                if (test.Ignored || test.Explicit)
                 {
-                    StdOut.Ignore($"{fixture.Name}.{testMethod.Name}");
+                    StdOut.Ignore($"{fixture.Name}.{test.Name}");
                     ignored++;
                     testCount++;
                 }
-                else if (testMethod.IsTest())
+                else 
                 {
-                    testCount++;
-                    var test = CreateTest(testMethod);
-                    RunTest(test);
-                }
-                else foreach (var testCase in testMethod.CustomAttributes.Where(a => a.IsTestCase()))
-                {
-                    testCount++;
-                    var test = CreateTestCase(testMethod, testCase);
                     RunTest(test);
                 }
             }
@@ -107,24 +86,9 @@ namespace Test
 
         internal void RunTest(string testName)
         {
-            foreach (var testMethod in methods)
-            {
-                if (testMethod.IsTest() && testMethod.Name.Equals(testName, StringComparison.OrdinalIgnoreCase))
-                {
-                    var test = CreateTest(testMethod);
-                    SetupRunTestTearDown(test);
-                    break;
-                }
-                foreach (var testCase in testMethod.CustomAttributes.Where(a => a.IsTestCase()))
-                {
-                    var test = CreateTestCase(testMethod, testCase);
-                    if (test.Name.Equals(testName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        SetupRunTestTearDown(test);
-                        break;
-                    }
-                }
-            }
+            var test = Tests().FirstOrDefault(t => t.Name.StartsWith(testName, StringComparison.Ordinal));
+            if (test != null)
+                SetupRunTestTearDown(test);
         }
 
         private void SetupRunTestTearDown(TestRunner test)
@@ -189,16 +153,16 @@ namespace Test
             StdErr.Error($"{fixture.Name}: Failed to setup fixture: {ex}");
         }
 
-        TestRunner CreateTest(MethodInfo testMethod)
+        TestRunner CreateTest(MethodInfo testMethod, ILookup<string, CustomAttributeData> attrsByName)
         {
-            return new TestRunner(fixture.Name, testMethod.Name, obj, setup, tearDown, testMethod, watch, null);
+            return new TestRunner(fixture.Name, testMethod.Name, obj, setup, tearDown, testMethod, watch, null, attrsByName);
         }
 
-        TestRunner CreateTestCase(MethodInfo testMethod, CustomAttributeData testCase)
+        TestRunner CreateTestCase(MethodInfo testMethod, CustomAttributeData testCase, ILookup<string, CustomAttributeData> attrsByName)
         {
             var args = TestCaseArgs(testCase);
             var testName = TestCaseName(testMethod, args);
-            return new TestRunner(fixture.Name, testName, obj, setup, tearDown, testMethod, watch, args);
+            return new TestRunner(fixture.Name, testName, obj, setup, tearDown, testMethod, watch, args, attrsByName);
         }
 
         static object[] TestCaseArgs(CustomAttributeData testCase)

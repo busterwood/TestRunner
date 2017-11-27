@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Test.Daemon
+namespace Tests.Daemon
 {
     class FolderMonitor
     {

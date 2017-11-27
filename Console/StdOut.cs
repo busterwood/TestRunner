@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace Test
+namespace Tests
 {
     static class StdOut
     {

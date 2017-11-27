@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -7,8 +8,8 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Test
-{
+namespace Tests
+{    
     public class TestRunner
     {
         readonly string fixtureName;
@@ -21,8 +22,9 @@ namespace Test
         readonly object[] args;
         readonly string category;
         int testFinished;
+        readonly ILookup<string, CustomAttributeData> attrsByName;
 
-        public TestRunner(string fixtureName, string testName, object obj, MethodInfo setup, MethodInfo tearDown, MethodInfo test, Stopwatch watch, object[] args)
+        public TestRunner(string fixtureName, string testName, object obj, MethodInfo setup, MethodInfo tearDown, MethodInfo test, Stopwatch watch, object[] args, ILookup<string, CustomAttributeData> attrsByName)
         {
             this.fixtureName = fixtureName;
             this.testName = testName;
@@ -32,12 +34,15 @@ namespace Test
             this.test = test;
             this.watch = watch;
             this.args = args;
-            this.category = test.Category() ?? test.DeclaringType.Category();
+            this.attrsByName = attrsByName;
+            this.category = this.attrsByName.Category() ?? test.DeclaringType.Category();
         }
 
         public string Name => testName;
 
-        public bool Ignored => test.IsIgnored();
+        public bool Ignored => attrsByName.Contains("IgnoredAttribute");
+
+        public bool Explicit => attrsByName.Contains("ExplicitAttribute");
 
         public bool Passed { get; private set; }
 
@@ -91,7 +96,7 @@ namespace Test
 
         private object TestTimeout()
         {
-            return test.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
+            return attrsByName["TimeoutAttribute"].FirstOrDefault()?.ConstructorArguments?.First().Value;
         }
 
         private object FixtureTimeout()

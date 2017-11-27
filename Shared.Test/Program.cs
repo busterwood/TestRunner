@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading;
 using BusterWood.Collections;
 
-namespace Test
+namespace Tests
 {
     class Program
     {

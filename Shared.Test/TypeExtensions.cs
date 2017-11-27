@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Test
+namespace Tests
 {
     static class TypeExtensions
     {
@@ -60,15 +61,17 @@ namespace Test
             return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestFixtureTearDownAttribute", StringComparison.Ordinal));
         }
 
-        public static bool IsTest(this MethodInfo method)
-        {
-            return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestAttribute", StringComparison.Ordinal));
-        }
+        //public static bool IsTest(this MethodInfo method)
+        //{
+        //    return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestAttribute", StringComparison.Ordinal));
+        //}
 
-        public static bool IsTestCase(this MethodInfo method)
-        {
-            return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestCaseAttribute", StringComparison.Ordinal));
-        }
+        public static bool IsTest(this ILookup<string, CustomAttributeData> attrs) => attrs.Contains("TestAttribute");
+
+        //public static bool IsTestCase(this MethodInfo method)
+        //{
+        //    return method.GetCustomAttributes().Any(a => string.Equals(a.GetType().Name, "TestCaseAttribute", StringComparison.Ordinal));
+        //}
 
         public static bool IsTimeout(this CustomAttributeData attr)
         {
@@ -101,20 +104,27 @@ namespace Test
             return string.Equals(ex?.InnerException?.GetType()?.Name, "SuccessException", StringComparison.Ordinal);
         }
 
+        // category lookup is the slowest part of code when profiling 
+        readonly static Dictionary<object, string> categoryCache = new Dictionary<object, string>(250);
+
         public static string Category(this Type type)
         {
-            return type.GetCustomAttributesData()
+            string category;
+            if (categoryCache.TryGetValue(type, out category))
+                return category;
+
+            category = type.GetCustomAttributesData()
                 .FirstOrDefault(a => string.Equals(a.AttributeType.Name, "CategoryAttribute", StringComparison.Ordinal))
                 ?.ConstructorArguments
                 ?.FirstOrDefault().Value?.ToString();
+            categoryCache.Add(type, category);
+            return category;
         }
 
-        public static string Category(this MethodInfo method)
+        public static string Category(this ILookup<string, CustomAttributeData> method)
         {
-            return method.GetCustomAttributesData()
-                .FirstOrDefault(a => string.Equals(a.AttributeType.Name, "CategoryAttribute", StringComparison.Ordinal))
-                ?.ConstructorArguments
-                ?.FirstOrDefault().Value?.ToString();
+            return method["CategoryAttribute"].FirstOrDefault()?.ConstructorArguments?.FirstOrDefault().Value?.ToString();
         }
+
     }
 }
