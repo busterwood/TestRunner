@@ -24,7 +24,10 @@ namespace TestGui
         ListViewItem failedFilter;
         ListViewItem ignoredFilter;
         ListViewItem slowFilter;
+        int count;
         int slowCount;
+        readonly List<TestEventArgs> testResultBuffer = new List<TestEventArgs>();
+        string running;
 
         public TestFixtureForm()
         {
@@ -37,6 +40,7 @@ namespace TestGui
         {
             this.Text = Runner.AsmName;
             testsList.SetDoubleBuffer();
+            categoriesList.SetDoubleBuffer();
 
             passedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("passedGroup", OrdinalIgnoreCase));
             failedGrp = testsList.Groups.Cast<ListViewGroup>().First(grp => grp.Name.Equals("failedGroup", OrdinalIgnoreCase));
@@ -60,12 +64,10 @@ namespace TestGui
 
         private void TestStarted(object sender, TestEventArgs e)
         {
-            if (InvokeRequired)
+            lock (testResultBuffer)
             {
-                BeginInvoke((EventHandler<TestEventArgs>)TestStarted, sender, e);
-                return;
+                running = $"Running {e.TestFixure}.{e.TestName}...";
             }
-            statusText.Text = $"Running {e.TestFixure}.{e.TestName}...";
         }
 
         private void RunStarted(object sender, RunStartedEventArgs e)
@@ -75,7 +77,9 @@ namespace TestGui
                 BeginInvoke((EventHandler<RunStartedEventArgs>)RunStarted, sender, e);
                 return;
             }
+            resultsTimer.Enabled = true;
             testsList.Cursor = Cursors.AppStarting;
+            count = 0;
             runTestsAgainMenuItem.Enabled = false;
             debugTestsToolStripMenuItem.Enabled = false;
             allFilter.Text = $"All";
@@ -101,7 +105,9 @@ namespace TestGui
                 BeginInvoke((EventHandler<RunFinishedEventArgs>)RunFinished, sender, e);
                 return;
             }
-            allFilter.Text = $"All ({e.Total})";
+            resultsTimer.Enabled = false;
+            resultsTimer_Tick(sender, null);
+            allFilter.Text = $"All ({count})";
             passedFilter.Text = $"Passed ({e.Passed})";
             failedFilter.Text = $"Failed ({e.Failed})";
             ignoredFilter.Text = $"Ignored ({e.Ignored})";
@@ -115,72 +121,12 @@ namespace TestGui
 
         private void Tested(object sender, TestEventArgs e)
         {
-            if (InvokeRequired)
+            lock(testResultBuffer)
             {
-                BeginInvoke((EventHandler<TestEventArgs>)Tested, sender, e);
-                return;
+                testResultBuffer.Add(e);                
             }
-
-            AddTestItem(e);
-            if (e.Elapsed > TimeSpan.FromSeconds(1))
-                AddSlowItem(e);
-            if (statusProgress.Value < statusProgress.Maximum)
-                statusProgress.Value++;
         }
-
-        private void AddTestItem(TestEventArgs e)
-        {
-            var li = new ListViewItem(e.TestName);
-            li.SubItems.Add(e.TestFixure);
-            switch (e.Result)
-            {
-                case TestResult.Pass:
-                    li.ImageIndex = TickImageIdx;
-                    li.Group = passedGrp;
-                    break;
-                case TestResult.Fail:
-                    li.ImageIndex = CrossImageIdx;
-                    li.Group = failedGrp;
-                    break;
-                case TestResult.Ignored:
-                    li.ImageIndex = IgnoredImageIdx;
-                    li.Group = ignoredGrp;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            li.SubItems.Add(e.Elapsed.HasValue ? e.Elapsed.Value.TotalMilliseconds.ToString("N0") : "");
-            li.SubItems.Add(e.Output.Count > 0 ? "Yes" : "");
-            li.SubItems.Add(e.Category ?? "");
-            li.Tag = e.Output;
-            testsList.Items.Add(li);
-        }
-
-        private void AddSlowItem(TestEventArgs e)
-        {
-            var li = new ListViewItem(e.TestName);
-            li.SubItems.Add(e.TestFixure);
-            switch (e.Result)
-            {
-                case TestResult.Pass:
-                    li.ImageIndex = TickImageIdx;
-                    break;
-                case TestResult.Fail:
-                    li.ImageIndex = CrossImageIdx;
-                    break;
-                case TestResult.Ignored:
-                    li.ImageIndex = IgnoredImageIdx;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            li.SubItems.Add(e.Elapsed.Value.TotalMilliseconds.ToString("N0"));
-            li.Tag = e.Output;
-            li.Group = slowGrp;
-            testsList.Items.Add(li);
-            slowCount++;
-        }
-
+      
         private void testsList_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (testsList.SelectedItems.Count == 0)
@@ -237,6 +183,7 @@ namespace TestGui
 
         private void runTestsAgainMenuItem_Click(object sender, EventArgs e)
         {
+            testsList.Items.Clear();
             runTestsAgainMenuItem.Enabled = false;
             debugTestsToolStripMenuItem.Enabled = false;
             Runner.RunTests();
@@ -267,5 +214,80 @@ namespace TestGui
             debugTestsToolStripMenuItem.Enabled = false;
             Runner.DebugTests();
         }
+
+        private void resultsTimer_Tick(object sender, EventArgs e)
+        {
+            TestEventArgs[] results;
+            string running;
+            lock(testResultBuffer)
+            {
+                results = new TestEventArgs[testResultBuffer.Count];
+                testResultBuffer.CopyTo(results);
+                testResultBuffer.Clear();
+                running = this.running;
+            }
+
+            testsList.Items.AddRange(results.Select(AddTestItem).ToArray());
+            testsList.Items.AddRange(results.Where(res => res.Elapsed > TimeSpan.FromSeconds(1)).Select(AddSlowItem).ToArray());
+            statusProgress.Value = Math.Min(statusProgress.Value + results.Length, statusProgress.Maximum);
+            allFilter.Text = $"All ({count})";
+            statusText.Text = running;
+        }
+
+        private ListViewItem AddTestItem(TestEventArgs e)
+        {
+            var li = new ListViewItem(e.TestName);
+            li.SubItems.Add(e.TestFixure);
+            switch (e.Result)
+            {
+                case TestResult.Pass:
+                    li.ImageIndex = TickImageIdx;
+                    li.Group = passedGrp;
+                    break;
+                case TestResult.Fail:
+                    li.ImageIndex = CrossImageIdx;
+                    li.Group = failedGrp;
+                    break;
+                case TestResult.Ignored:
+                    li.ImageIndex = IgnoredImageIdx;
+                    li.Group = ignoredGrp;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            li.SubItems.Add(e.Elapsed.HasValue ? e.Elapsed.Value.TotalMilliseconds.ToString("N0") : "");
+            li.SubItems.Add(e.Output.Count > 0 ? "Yes" : "");
+            li.SubItems.Add(e.Category ?? "");
+            li.Tag = e.Output;
+            count++;
+            return li;
+        }
+
+        private ListViewItem AddSlowItem(TestEventArgs e)
+        {
+            var li = new ListViewItem(e.TestName);
+            li.SubItems.Add(e.TestFixure);
+            switch (e.Result)
+            {
+                case TestResult.Pass:
+                    li.ImageIndex = TickImageIdx;
+                    break;
+                case TestResult.Fail:
+                    li.ImageIndex = CrossImageIdx;
+                    break;
+                case TestResult.Ignored:
+                    li.ImageIndex = IgnoredImageIdx;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            li.SubItems.Add(e.Elapsed.Value.TotalMilliseconds.ToString("N0"));
+            li.Tag = e.Output;
+            li.Group = slowGrp;
+            slowCount++;
+            return li;
+        }
+
+
     }
 }
