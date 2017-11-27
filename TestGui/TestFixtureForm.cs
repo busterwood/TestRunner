@@ -227,14 +227,17 @@ namespace TestGui
                 running = this.running;
             }
 
-            testsList.Items.AddRange(results.Select(AddTestItem).ToArray());
-            testsList.Items.AddRange(results.Where(res => res.Elapsed > TimeSpan.FromSeconds(1)).Select(AddSlowItem).ToArray());
+            if (results.Length == 0)
+                return;
+
+            testsList.Items.AddRange(results.Select(NewTestItem).ToArray());
+            testsList.Items.AddRange(results.Where(res => res.Elapsed > TimeSpan.FromSeconds(1)).Select(NewSlowItem).ToArray());
             statusProgress.Value = Math.Min(statusProgress.Value + results.Length, statusProgress.Maximum);
             allFilter.Text = $"All ({count})";
             statusText.Text = running;
         }
 
-        private ListViewItem AddTestItem(TestEventArgs e)
+        private ListViewItem NewTestItem(TestEventArgs e)
         {
             var li = new ListViewItem(e.TestName);
             li.SubItems.Add(e.TestFixure);
@@ -263,7 +266,7 @@ namespace TestGui
             return li;
         }
 
-        private ListViewItem AddSlowItem(TestEventArgs e)
+        private ListViewItem NewSlowItem(TestEventArgs e)
         {
             var li = new ListViewItem(e.TestName);
             li.SubItems.Add(e.TestFixure);

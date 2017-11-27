@@ -299,7 +299,6 @@
             // 
             // resultsTimer
             // 
-            this.resultsTimer.Interval = 150;
             this.resultsTimer.Tick += new System.EventHandler(this.resultsTimer_Tick);
             // 
             // TestFixtureForm
