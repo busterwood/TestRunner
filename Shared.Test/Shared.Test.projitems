@@ -9,10 +9,13 @@
     <Import_RootNamespace>Shared.Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Fixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FixtureRunner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Program.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SetUpFixtureRunner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stats.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Test.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeExtensions.cs" />
   </ItemGroup>

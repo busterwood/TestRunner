@@ -9,40 +9,24 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Tests
-{    
+{
     public class TestRunner
     {
-        readonly string fixtureName;
-        readonly string testName;
+        readonly Fixture fixture;
+        readonly Test test;
         object obj;
-        readonly MethodInfo setup;
-        readonly MethodInfo tearDown;
-        readonly MethodInfo test;
         readonly Stopwatch watch;
-        readonly object[] args;
-        readonly string category;
         int testFinished;
-        readonly ILookup<string, CustomAttributeData> attrsByName;
 
-        public TestRunner(string fixtureName, string testName, object obj, MethodInfo setup, MethodInfo tearDown, MethodInfo test, Stopwatch watch, object[] args, ILookup<string, CustomAttributeData> attrsByName)
+        public TestRunner(Test test, Fixture fixture, object obj, Stopwatch watch)
         {
-            this.fixtureName = fixtureName;
-            this.testName = testName;
-            this.obj = obj;
-            this.setup = setup;
-            this.tearDown = tearDown;
+            this.fixture = fixture;
             this.test = test;
+            this.obj = obj;
             this.watch = watch;
-            this.args = args;
-            this.attrsByName = attrsByName;
-            this.category = this.attrsByName.Category() ?? test.DeclaringType.Category();
         }
 
-        public string Name => testName;
-
-        public bool Ignored => attrsByName.Contains("IgnoredAttribute");
-
-        public bool Explicit => attrsByName.Contains("ExplicitAttribute");
+        public string Name => test.Name;
 
         public bool Passed { get; private set; }
 
@@ -63,15 +47,14 @@ namespace Tests
         public void Run()
         {
             LogStartOfTest();
-            ChangeTypeOfArguments();
             SetNunitContext();
             watch.Reset();
             watch.Start();
             if (!SetUp())
                 return;
-            object timeout = TestTimeout() ?? FixtureTimeout();
+            object timeout = test.Timeout ?? fixture.Timeout;
             if (timeout != null && !Debugger.IsAttached) // ignore timeout when debugger is attached
-                RunTestWithTimeout(args, timeout);
+                RunTestWithTimeout(timeout);
             else
                 RunTestMethod();
             TearDown();
@@ -79,42 +62,32 @@ namespace Tests
 
         private void LogStartOfTest()
         {
-            StdOut.Start($"{fixtureName}.{testName}{(category != null ? ": " : "")}{category}");
+            var cat = test.Category;
+            StdOut.Start($"{fixture.Name}.{test.Name}{(cat != null ? ": " : "")}{cat}");
         }
 
         private void SetNunitContext()
         {
             IDictionary context = new Hashtable
             {
-                { "Test.Name", testName },
-                { "Test.FullName", fixtureName + "." + testName },
+                { "Test.Name", test.Name },
+                { "Test.FullName", fixture.Name + "." + test.Name },
                 { "WorkDirectory", Environment.CurrentDirectory },
                 { "TestDirectory", Environment.CurrentDirectory },
             };
             CallContext.LogicalSetData("NUnit.Framework.TestContext", context);
         }
 
-        private object TestTimeout()
+        private void RunTestWithTimeout(object timeoutMs)
         {
-            return attrsByName["TimeoutAttribute"].FirstOrDefault()?.ConstructorArguments?.First().Value;
-        }
-
-        private object FixtureTimeout()
-        {
-            return test.DeclaringType.CustomAttributes.FirstOrDefault(a => a.IsTimeout())?.ConstructorArguments?.First().Value;
-        }
-
-        private void RunTestWithTimeout(object[] args, object timeoutMs)
-        {
-            Thread testThread = new Thread(RunTestMethod)
-            {IsBackground = true};
+            Thread testThread = new Thread(RunTestMethod) { IsBackground = true };
             testThread.Start();
             if (testThread.Join((int)timeoutMs))
                 return; // all good
             testThread.Interrupt();
             if (!testThread.Join(50))
             {
-                // last chance - aborting may leave unrealased locks 
+                // last chance - aborting may leave locks 
                 testThread.Abort();
                 testThread.Join();
             }
@@ -125,7 +98,7 @@ namespace Tests
         {
             try
             {
-                var result = test.Invoke(obj, args) as Task; // support async test methods
+                var result = test.Invoke(obj) as Task; // support async test methods
                 if (result != null)
                     WaitForAsyncTestToComplete(result);
                 else
@@ -142,21 +115,6 @@ namespace Tests
             catch (Exception ex)
             {
                 Fail(ex);
-            }
-        }
-
-        private void ChangeTypeOfArguments()
-        {
-            if (args != null)
-            {
-                int i = 0;
-                foreach (var p in test.GetParameters())
-                {
-                    var arg = args[i];
-                    if (arg != null && p.ParameterType != arg.GetType() && !p.ParameterType.IsEnum)
-                        args[i] = Convert.ChangeType(arg, p.ParameterType);
-                    i++;
-                }
             }
         }
 
@@ -185,7 +143,7 @@ namespace Tests
         {
             if (EndOfTestAlreadyReported())
                 return;
-            StdOut.Passed($"{fixtureName}.{testName} in {watch.ElapsedMilliseconds} MS");
+            StdOut.Passed($"{fixture.Name}.{test.Name} in {watch.ElapsedMilliseconds} MS");
             Passed = true;
         }
 
@@ -194,7 +152,7 @@ namespace Tests
             if (EndOfTestAlreadyReported())
                 return;
             Console.WriteLine(ex); // write out the message before the fail line so the Gui can parse the result
-            StdOut.Fail($"{fixtureName}.{testName} in {watch.ElapsedMilliseconds} MS");
+            StdOut.Fail($"{fixture.Name}.{test.Name} in {watch.ElapsedMilliseconds} MS");
             Failed = true;
         }
 
@@ -203,7 +161,7 @@ namespace Tests
             if (EndOfTestAlreadyReported())
                 return;
             Console.WriteLine(message); // write out the message before the fail line so the Gui can parse the result
-            StdOut.Fail($"{fixtureName}.{testName} in {watch.ElapsedMilliseconds} MS");
+            StdOut.Fail($"{fixture.Name}.{test.Name} in {watch.ElapsedMilliseconds} MS");
             Failed = true;
         }
 
@@ -213,7 +171,7 @@ namespace Tests
         {
             try
             {
-                setup?.Invoke(obj, null);
+                fixture.Setup?.Invoke(obj, null);
                 return true;
             }
             catch (TargetInvocationException ex)
@@ -232,7 +190,7 @@ namespace Tests
         {
             try
             {
-                tearDown?.Invoke(obj, null);
+                fixture.TearDown?.Invoke(obj, null);
                 return true;
             }
             catch (TargetInvocationException ex)

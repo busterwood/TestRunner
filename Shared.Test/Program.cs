@@ -39,7 +39,7 @@ namespace Tests
             if (fixtureTypes == null)
                 return Exit(3);
 
-            List<FixtureRunner> fixtures = CreateFixtureRunners(fixtureTypes);
+            List<Fixture> fixtures = CreateFixtures(fixtureTypes);
 
             if (list)
             {
@@ -62,7 +62,7 @@ namespace Tests
                 RunOneTest(testToRun, fixtures);
             else
             {
-                StdErr.Info($"{fixtures.Sum(f => f.CountTests())} test, {fixtures.Count} fixtures" + (debug ? ", debug" : ""));
+                StdErr.Info($"{fixtures.Sum(f => f.Tests().Count())} test, {fixtures.Count} fixtures" + (debug ? ", debug" : ""));
                 RunAllTests(sw, fixtures);
             }
 
@@ -86,30 +86,31 @@ namespace Tests
                 Thread.Sleep(100);
         }
 
-        private static void ListAllTests(List<FixtureRunner> fixtures)
+        private static void ListAllTests(List<Fixture> fixtures)
         {
             foreach (var fr in fixtures)
             {
-                foreach (var name in fr.TestNames())
+                foreach (var test in fr.Tests())
                 {
-                    Console.WriteLine(name);
+                    Console.WriteLine(test.Name);
                 }
             }
         }
 
-        private static void RunOneTest(string testToRun, List<FixtureRunner> fixtures)
+        private static void RunOneTest(string testToRun, List<Fixture> fixtures)
         {
             var bits = testToRun.Split('.');
             var fixtureName = bits.Length == 1 ? null : bits[0];
             var testName = fixtureName == null ? null : string.Join(".", bits.Skip(1));
             var fix = fixtureName == null ? fixtures : fixtures.Where(f => f.Type.Name.Equals(fixtureName, StringComparison.OrdinalIgnoreCase));
-            foreach (var fixture in fix)
+            foreach (var f in fix)
             {
-                fixture.RunTest(testName);
+                var fr = new FixtureRunner(f);
+                fr.RunSingleTest(testName);
             }
         }
 
-        private static void RunAllTests(Stopwatch sw, List<FixtureRunner> fixtures)
+        private static void RunAllTests(Stopwatch sw, List<Fixture> fixtures)
         {
             Stats totals = Stats.Zero;
             foreach (var fixture in fixtures)
@@ -151,14 +152,14 @@ namespace Tests
             return testDomain.ExecuteAssembly(Assembly.GetExecutingAssembly().Location, args);
         }
 
-        private static List<FixtureRunner> CreateFixtureRunners(IList<Type> fixtureTypes)
+        private static List<Fixture> CreateFixtures(IList<Type> fixtureTypes)
         {
-            var runners = new List<FixtureRunner>(fixtureTypes.Count);
+            var runners = new List<Fixture>(fixtureTypes.Count);
             foreach (var type in fixtureTypes)
             {
                 try
                 {
-                    runners.Add(new FixtureRunner(type));
+                    runners.Add(new Fixture(type));
                 }
                 catch (Exception ex)
                 {
@@ -175,16 +176,17 @@ namespace Tests
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", configFilePath);
         }
 
-        private static Stats RunFixture(FixtureRunner fixture)
+        private static Stats RunFixture(Fixture fixture)
         {
             try
             {
-                fixture.RunTests();
-                return fixture.Statistics;
+                var fr = new FixtureRunner(fixture);
+                fr.RunTests();
+                return fr.Statistics;
             }
             catch (Exception ex)
             {
-                StdErr.Error($"Cannot run fixture '{fixture.Type.FullName}': {ex}");
+                StdErr.Error($"Cannot run fixture '{fixture.Name}': {ex}");
                 return Stats.Zero;
             }
         }
