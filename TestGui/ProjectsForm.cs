@@ -67,6 +67,7 @@ namespace TestGui
                 var li = new ListViewItem(new string[] { lastChanged, args.Project, relPath.ToString() });
                 li.Tag = b;
                 li.Group = GroupByAge(b.LastChangedUtc);
+                li.ForeColor = ForeColorByAge(b.LastChangedUtc);
                 b.Built += ProjectBuilt;
                 projectsList.Items.Add(li);
             }
@@ -80,6 +81,16 @@ namespace TestGui
             if (age < TimeSpan.FromDays(4 * 7))
                 return projectsList.Groups[1];
             return projectsList.Groups[2];
+        }
+
+        private Color ForeColorByAge(DateTime lastChangedUtc)
+        {
+            var age = DateTime.UtcNow - lastChangedUtc;
+            if (age < TimeSpan.FromDays(4))
+                return Color.Black;
+            if (age < TimeSpan.FromDays(4 * 7))
+                return Color.DarkGray;
+            return Color.Gray;
         }
 
         private void ProjectBuilt(object sender, EventArgs args)
