@@ -80,7 +80,7 @@ namespace Tests
 
         private void RunTestWithTimeout(object timeoutMs)
         {
-            Thread testThread = new Thread(RunTestMethod) { IsBackground = true };
+            Thread testThread = new Thread(RunTestMethod) { IsBackground = true, Name = "Test" };
             testThread.Start();
             if (testThread.Join((int)timeoutMs))
                 return; // all good

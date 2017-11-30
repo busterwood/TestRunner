@@ -74,7 +74,7 @@ namespace TestGui
         }
 
         private ListViewGroup GroupByAge(DateTime lastChangedUtc)
-        {
+        { 
             var age = DateTime.UtcNow - lastChangedUtc;
             if (age < TimeSpan.FromDays(4))
                 return projectsList.Groups[0];
