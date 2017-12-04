@@ -89,8 +89,8 @@ namespace TestGui
             if (age < TimeSpan.FromDays(4))
                 return Color.Black;
             if (age < TimeSpan.FromDays(4 * 7))
-                return Color.DarkGray;
-            return Color.Gray;
+                return Color.Gray;
+            return Color.DarkGray;
         }
 
         private void ProjectBuilt(object sender, EventArgs args)
@@ -104,6 +104,7 @@ namespace TestGui
             var itemBuilt = projectsList.Items.Cast<ListViewItem>().First(li => li.Tag == build);
             itemBuilt.Text = build.LastChangedUtc.ToString("u").TrimEnd('Z');
             itemBuilt.Group = GroupByAge(build.LastChangedUtc);
+            itemBuilt.ForeColor = Color.Black;
             projectsList.Sort(); // modification time will have changed, force re-sorting
         }
 
