@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 namespace Tests
 {
     public class Test
@@ -18,7 +18,7 @@ namespace Tests
         public virtual string Name => test.Name;
         public virtual object[] Args => null;
         public string Category => attrsByName["CategoryAttribute"].FirstOrDefault()?.ConstructorArguments?.FirstOrDefault().Value?.ToString();
-        public bool Ignored => attrsByName.Contains("IgnoredAttribute");
+        public bool Ignored => attrsByName.Contains("IgnoreAttribute");
         public bool Explicit => attrsByName.Contains("ExplicitAttribute");
         public object Timeout => attrsByName["TimeoutAttribute"].FirstOrDefault()?.ConstructorArguments?.First().Value;
         public object Invoke(object obj) => test.Invoke(obj, Args);
