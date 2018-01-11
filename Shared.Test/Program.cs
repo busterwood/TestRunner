@@ -100,9 +100,19 @@ namespace Tests
         private static void RunOneTest(string testToRun, List<Fixture> fixtures)
         {
             var bits = testToRun.Split('.');
-            var fixtureName = bits.Length == 1 ? null : bits[0];
-            var testName = fixtureName == null ? null : string.Join(".", bits.Skip(1));
-            var fix = fixtureName == null ? fixtures : fixtures.Where(f => f.Type.Name.Equals(fixtureName, StringComparison.OrdinalIgnoreCase));
+
+            IEnumerable<Fixture> fix = fixtures;
+            string testName;
+            if (bits.Length == 2)
+            {
+                fix = fix.Where(f => string.Equals(f.Type.Name, bits[0], StringComparison.OrdinalIgnoreCase));
+                testName = bits[1];
+            }
+            else
+            {
+                testName = bits[0];
+            }
+            fix = fix.Where(f => f.Tests().Any(t => string.Equals(t.Name, testName, StringComparison.OrdinalIgnoreCase)));
             foreach (var f in fix)
             {
                 var fr = new FixtureRunner(f);
