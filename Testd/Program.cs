@@ -39,6 +39,8 @@ namespace Tests.Daemon
                 var line = Console.ReadLine()?.ToLower();
                 if (string.IsNullOrEmpty(line))
                     break;
+                else if (line == "?")
+                    monitor.ListTests();
                 else if (line == "run")
                     monitor.RunNow();
                 else if (line == "debug")
@@ -68,6 +70,8 @@ namespace Tests.Daemon
             var args = testArgs.ToUniqueList(StringComparer.OrdinalIgnoreCase);
             if (e.Debug)
                 args.Add("--debug");
+            if (e.ListTests)
+                args.Add("--list");
 
             var si = new ProcessStartInfo
             {

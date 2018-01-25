@@ -44,6 +44,11 @@ namespace Tests.Daemon
             changes.Add(new ChangedEventArgs());
         }
 
+        internal void ListTests()
+        {
+            changes.Add(new ChangedEventArgs { ListTests = true });
+        }
+
         void StartWorker()
         {
             for(;;)
@@ -80,5 +85,6 @@ namespace Tests.Daemon
     public class ChangedEventArgs : EventArgs
     {
         public bool Debug { get; set; }
+        public bool ListTests { get; set; }
     }
 }
