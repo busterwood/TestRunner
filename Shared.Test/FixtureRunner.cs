@@ -53,7 +53,7 @@ namespace Tests
 
         internal void RunSingleTest(string testName)
         {
-            var test = Tests().FirstOrDefault(t => t.Name.StartsWith(testName, StringComparison.Ordinal));
+            var test = Tests().FirstOrDefault(t => t.Name.IndexOf(testName, StringComparison.OrdinalIgnoreCase) >= 0);
             if (test != null)
                 SetupRunTestTearDown(test);
         }
