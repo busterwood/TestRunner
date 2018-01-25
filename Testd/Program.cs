@@ -43,6 +43,8 @@ namespace Tests.Daemon
                     monitor.ListTests();
                 else if (line == "run")
                     monitor.RunNow();
+                else if (line.StartsWith("run "))
+                    monitor.RunNow(line.Substring(4));
                 else if (line == "debug")
                     monitor.DebugNow();
             }
@@ -72,6 +74,8 @@ namespace Tests.Daemon
                 args.Add("--debug");
             if (e.ListTests)
                 args.Add("--list");
+            if (e.Test != null)
+                args.Add("--run " + e.Test);
 
             var si = new ProcessStartInfo
             {

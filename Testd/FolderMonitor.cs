@@ -71,9 +71,9 @@ namespace Tests.Daemon
             }
         }
 
-        public void RunNow()
+        public void RunNow(string test = null)
         {
-            changes.Add(new ChangedEventArgs { Debug = false });
+            changes.Add(new ChangedEventArgs { Debug = false, Test=test });
         }
 
         public void DebugNow()
@@ -86,5 +86,6 @@ namespace Tests.Daemon
     {
         public bool Debug { get; set; }
         public bool ListTests { get; set; }
+        public string Test { get; set; }
     }
 }

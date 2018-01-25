@@ -112,7 +112,7 @@ namespace Tests
             {
                 testName = bits[0];
             }
-            fix = fix.Where(f => f.Tests().Any(t => string.Equals(t.Name, testName, StringComparison.OrdinalIgnoreCase)));
+            fix = fix.Where(f => f.Tests().Any(t => t.Name.IndexOf(testName, StringComparison.OrdinalIgnoreCase) >= 0));
             foreach (var f in fix)
             {
                 var fr = new FixtureRunner(f);
